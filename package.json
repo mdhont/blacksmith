@@ -1,0 +1,39 @@
+{
+  "name": "blacksmith-base-components",
+  "version": "0.0.6",
+  "description": "Blacksmith recipes base components types",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitnami/blacksmith-base-components.git"
+  },
+  "scripts": {
+    "lint": "gulp lint",
+    "test": "gulp test",
+    "ci-test": "gulp ci-test",
+    "ci-lint": "gulp ci-lint"
+  },
+  "dependencies": {
+    "nami-logger": "^0.0.1",
+    "nami-utils": "^0.0.1",
+    "tarball-utils": "bitnami/node-tarball-utils#v2.0.1",
+    "compilation-utils": "bitnami/node-compilation-utils#v1.0.1"
+  },
+  "devDependencies": {
+    "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
+    "eslint": "^2.11.1",
+    "eslint-config-bitnami": "bitnami/eslint-config-bitnami#v1.0.0",
+    "eslint-plugin-import": "^1.8.1",
+    "chai": "^3.2.0",
+    "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
+    "chai-subset": "^1.1.0",
+    "mocha": "^3.0.2",
+    "gulp": "^3.9.1",
+    "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.3"
+  },
+  "keywords": [
+    "blacksmith"
+  ],
+  "author": "Bitnami",
+  "license": "GPL-2.0"
+}
