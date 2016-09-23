@@ -1,0 +1,22 @@
+{
+  "compilation": {
+    "prefix": "/usr/local"
+  },
+  "paths": {
+    "recipes": ["./recipes"],
+    "output": "./output",
+    "sandbox": "./sandbox"
+  },
+  "componentTypeCollections": ["blacksmith-base-components", "blacksmith-extra-component-types"],
+  "metadataServer": {
+    "activate": false,
+    "prioritize": false,
+    "endPoint": null
+  },
+  "plugins": [
+      "blacksmith-containerized-build-command"
+  ],
+  "containerizedBuild": {
+    "defaultImage": "gcr.io/bitnami-containers/bitnami-base-buildpack"
+  }
+}

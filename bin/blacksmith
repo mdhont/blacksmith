@@ -1,0 +1,21 @@
+#!/bin/sh
+
+SCRIPT=$0
+if [ -h $SCRIPT ]; then
+    SCRIPT=`readlink $SCRIPT`
+fi
+
+ROOTDIR=`cd $(dirname $SCRIPT)/.. && pwd`
+if [ "$1" = "--runtime" ]; then
+    if [ ! -f "$ROOTDIR/$2" ]; then
+        NODE_RUNTIME=$2
+    else
+        NODE_RUNTIME=$ROOTDIR/$2
+    fi
+    shift
+    shift
+else
+    NODE_RUNTIME=$ROOTDIR/runtimes/node
+fi
+
+$NODE_RUNTIME $ROOTDIR/index.js "$@"

@@ -1,0 +1,43 @@
+{
+  "name": "blacksmith",
+  "version": "1.0.2",
+  "description": "Bitnami Blacksmith System",
+  "main": "index.js",
+  "engines": {
+    "node": "~6"
+  },
+  "dependencies": {
+    "blacksmith-containerized-build-command": "bitnami/blacksmith-containerized-build#v0.0.16",
+    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.6",
+    "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.1",
+    "nami-utils": "^0.0.1",
+    "cmd-parser": "^0.0.1",
+    "blacksmith-core": "bitnami/blacksmith-core#v0.0.15",
+    "common-utils": "bitnami/node-common-utils#v2.0.0",
+    "version-utils": "bitnami/node-version-utils#v2.0.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "bitnami-gulp-common-tasks": "^1.0.2",
+    "lodash": "^3.10.1",
+    "minimist": "^1.2.0",
+    "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
+    "chai": "^3.2.0",
+    "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
+    "chai-subset": "^1.1.0",
+    "eslint": "^2.11.1",
+    "eslint-config-bitnami": "^1.0.0",
+    "eslint-plugin-import": "^1.8.1"
+  },
+  "scripts": {
+    "install-runtime": "gulp install-node",
+    "bundle": "gulp bundle",
+    "lint": "gulp lint",
+    "test": "gulp test",
+    "ci-test": "gulp ci-test",
+    "ci-lint": "gulp ci-lint",
+    "eslint-report": "eslint *.js lib -f node_modules/eslint-html-reporter/reporter.js -o qa/eslint-report.html"
+  },
+  "author": "Bitnami",
+  "license": "GPL-2.0"
+}
