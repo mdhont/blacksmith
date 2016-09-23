@@ -95,12 +95,12 @@ blacksm INFO  config: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-st
 Blacksmith generated the tarball with the component compiled in the artifacts folder.
 ```
 
-You can find more info about more Blacksmith functionalities module at the [Blacksmith User Guide].
+You can find more info about more Blacksmith functionalities module at the [Blacksmith User Guide](./docs/Blacksmith.md).
 
 ## Licensing
 Blacksmith is licensed under the GPL, Version 2.0
 
-See the COPYING file for the full license text.
+See the [COPYING](./COPYING) file for the full license text.
 
 ## Contributing
 Before submitting a pull request, please make sure the following is done:
@@ -109,4 +109,4 @@ Before submitting a pull request, please make sure the following is done:
   * If you've added code that should be tested, please add a test
   * Ensure the test suite passes (npm test).
   * Make sure your code lints (eslint)
-  * In order to accept your pull request, we need you to submit this CLA.
+  * In order to accept your pull request, we need you to submit this [CLA](./CLA.txt).
