@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ "$1" == --prefix* ]]; then
+    # Binary file
+    prefix=$(echo $1 | cut -f2 -d=)
+    mkdir -p $prefix
+    echo -n -e \\x48\\x00\\x49\\x00 > $prefix/sample
+fi
