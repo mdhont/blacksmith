@@ -1,0 +1,36 @@
+{
+  "name": "blacksmith-containerized-build-command",
+  "version": "0.0.16",
+  "description": "Blacksmith commands to build components in a container",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitnami/blacksmith-containerized-build-command.git"
+  },
+  "dependencies": {
+    "docker-utils": "bitnami/node-docker-utils#v2.2.2",
+    "nami-utils": "^0.1.0",
+    "strftime": "^0.9.2"
+  },
+  "devDependencies": {
+    "lodash": "^3.10.1",
+    "eslint": "^2.11.1",
+    "eslint-config-bitnami": "^1.0.0",
+    "eslint-plugin-import": "^1.8.1",
+    "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
+    "chai": "^3.2.0",
+    "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
+    "chai-subset": "^1.1.0",
+    "mocha": "^3.0.2",
+    "gulp": "^3.9.1",
+    "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.3"
+  },
+  "scripts": {
+    "lint": "gulp lint",
+    "test": "gulp test",
+    "ci-test": "gulp ci-test",
+    "ci-lint": "gulp ci-lint"
+  },
+  "author": "Bitnami",
+  "license": "GPL-2.0"
+}
