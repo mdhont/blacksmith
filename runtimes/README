@@ -2,13 +2,6 @@ You have to provide a list of runtimes to use.
 
 The default runtime will be 'runtimes/node', but it can be overwritten using the --runtime flag.
 
-When compiling inside a docker image, the runtime to use will be autocalculated based on the platform to build for and the flavor.
-
 For example, executing:
 
-blacksmith compile --docker-image-id alpine-image --flavor alpine --platform linux-x64 zlib
-
-The search path for runtimes will be:
-
-runtimes/linux-x64/alpine/node, runtimes/linux-x64/node, runtimes/node
-
+blacksmith --runtime runtimes/alpine/node build --flavor alpine zlib

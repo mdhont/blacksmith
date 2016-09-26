@@ -36,7 +36,6 @@ commonTasks.bundle({
     './config-handler/*.js',
     './bin/**/*'
   ],
-  npmRegistry: 'http://npm-repo01.ext.bitnami.net',
   runtime: {
     version: nodeVersion,
     destDir: './runtimes'

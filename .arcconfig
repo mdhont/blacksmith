@@ -1,6 +1,0 @@
-{
-  "phabricator.uri" : "http://phabricator.bitnami.com:8080/",
-  "project.name" : "blacksmith",
-  "unit.engine": "MochaEngine",
-  "unit.mocha.coverage.exclude": ["**/node_modules/**"]
-}
