@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "bitnami-gulp-common-tasks": "^1.0.2",
+    "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.3",
     "lodash": "^3.10.1",
     "minimist": "^1.2.0",
     "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
@@ -26,7 +26,7 @@
     "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
     "chai-subset": "^1.1.0",
     "eslint": "^2.11.1",
-    "eslint-config-bitnami": "^1.0.0",
+    "eslint-config-bitnami": "bitnami/eslint-config-bitnami#v1.0.0",
     "eslint-plugin-import": "^1.8.1"
   },
   "scripts": {
