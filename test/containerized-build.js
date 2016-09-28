@@ -96,7 +96,7 @@ describe('#containerized-build()', function() {
     // Modifies the prefix
     expect(buildResult.stdout).to.contain(`--prefix=${test.buildDir}`);
     // Modifies the maximum number of jobs
-    expect(buildResult.stdout).to.contain(`["--jobs=${jobs}"]`);
+    expect(buildResult.stdout).to.contain(`"--jobs=${jobs}"`);
   });
   it('Continues a previous build', function() {
     const test = helpers.createTestEnv(extraConf);

@@ -32,7 +32,7 @@ describe('#build()', function() {
     expect(res.stdout).to.contain(`prefix=${test.prefix}`);
   });
 
-  it('Builds a simple package using a metadata server', function() {
+  xit('Builds a simple package using a metadata server', function() {
     const metadataServerEndpoint = 'https://test-metadata-server.net/api/v1';
     const test = helpers.createTestEnv({
       'metadataServer': {
@@ -95,7 +95,7 @@ describe('#build()', function() {
     // Modifies the prefix
     expect(path.join(test.buildDir, 'common')).to.be.a.path();
     // Modifies the maximum number of jobs
-    expect(res.stdout).to.contain(`["--jobs=${jobs}"]`);
+    expect(res.stdout).to.contain(`"--jobs=${jobs}"`);
     // Forces rebuilding
     expect(res.stdout).to.contain(`Deleting ${path.join(test.sandbox, componentFolder)}`);
     // Strip components in the minify method
