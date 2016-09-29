@@ -1,18 +1,18 @@
-# Table of contents
+Table of contents
 
 * [Introduction](#introduction)
 * [Configuration](#configuration)
-  * [Useful configuration options](#useful-configuration-options)
+ * [Useful configuration options](#useful-configuration-options)
 * [Basic commands](#basic-commands)
-  * [configure](#configure)
-  * [inspect](#inspect)
-  * [build](#build)
-  * [containerized-build](#containerized-build)
-  * [shell](#shell)
+ * [configure](#configure)
+ * [inspect](#inspect)
+ * [build](#build)
+ * [containerized-build](#containerized-build)
+ * [shell](#shell)
 * [Compilation recipes](#compilation-recipes)
 * [Examples](#examples)
-  * [Build a single component](#build-a-single-component)
-  * [Build a component and its dependencies](#build-a-component-and-its-dependencies)
+ * [Build a single component](#build-a-single-component)
+ * [Build a component and its dependencies](#build-a-component-and-its-dependencies)
 
 # Introduction
 
@@ -23,7 +23,7 @@ Blacksmith will read its configuration options from the `config.json` file locat
 
 The configuration can be modified directly editing the file or using the command `blacksmith configure` that is explained below.
 
-Those configuration options can be overriden anytime using the command line by passing options to the blacksmith command you are executing.
+Those configuration options can be overriden anytime using the command line by passing options to the `blacksmith` command you are executing.
 
 ## Useful configuration options
 ### compilation.prefix
@@ -77,13 +77,13 @@ blacksmith --help
 
 Usage: blacksmith <options> <command>
 
- where <options> include:
+where <options> include:
 ...
 And <command> is one of: configure, inspect, build, containerized-build, shell
 
 To get more information about a command, you can execute:
 
-   blacksmith <command> --help
+  blacksmith <command> --help
 ```
 
 ## configure
@@ -116,17 +116,17 @@ Example:
 ```
 $> bs inspect zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
 {
-    "platform": "linux-x64",
-    "flavor": null,
-    "components": [
-        {
-            "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz",
-            "patches": [],
-            "extraFiles": [],
-            "id": "zlib",
-            "version": "1.2.8"
-        }
-    ]
+   "platform": "linux-x64",
+   "flavor": null,
+   "components": [
+       {
+           "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz",
+           "patches": [],
+           "extraFiles": [],
+           "id": "zlib",
+           "version": "1.2.8"
+       }
+   ]
 }
 ```
 
@@ -185,17 +185,17 @@ $> blacksmith shell /tmp/blacksmith-output/2016-09-16-145643-php-linux-x64-stand
 ```
 
 # Compilation recipes
-In order to build a component we need to provide a JSON file with minimun metadata definitions and the compilation instructions as a javascript file.
+In order to build a component, Blacksmith needs a JSON file with minimum metadata definitions and the compilation instructions as a JavaScript file.
 
 ## metadata.json
 The `metadata.json` file should contain at least the following fields:
 
-  * id
-  * latest
-  * component.name
-  * component.licenses
-  * component.licenses[].type
-  * component.licenses[].relativePath
+ * id
+ * latest
+ * component.name
+ * component.licenses
+ * component.licenses[].type
+ * component.licenses[].relativePath
 
 By default, Blacksmith will look for the source code using the tarball name `<name>-<version>.tar.gz`, but it can be overriden with the `tarballName` property.
 
@@ -203,15 +203,15 @@ Example:
 
 ```
 {
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
+ "id": "zlib",
+ "latest": "1.2.8",
+ "licenses": [
+   {
+     "type": "ZLIB",
+     "licenseRelativePath": "README",
+     "main": true
+   }
+ ]
 }
 ```
 
@@ -219,24 +219,24 @@ Example:
 In this file we should define a Javascript class, extending from a predefined compilation class, and export it.
 It should extend from one the following classes:
 
-  * `CompiledComponent`
-  * `MakeComponent`
-  * `Library`
+ * `CompiledComponent`
+ * `MakeComponent`
+ * `Library`
 
 All the classes will execute the following methods in order (they can be overriden or recalled with `super`):
 
-  * `initialize` -- Can be overriden. Will prepare environment variables and configuration options for the entire workflow
-  * `cleanup` -- Not need to override. Will remove files from previous builds if found
-  * `extract` -- Not need to override. Will extract the source tarball
-  * `copyExtraFiles` -- Not need to override. Will copy extra files defined in `stack.json` (explained at the end of the document)
-  * `patch` -- Not need to override. Will apply the patch specified in `stack.json` (explained at the end of the document)
-  * `postExtract` -- Can be overriden. Common tasks that execute after extract
-  * `build` -- Can be overriden. Contain build instructions
-  * `postBuild` -- Can be overriden. Common tasks that execute after the build
-  * `install` -- Can be overriden. Copy the compiled files to the right directory
-  * `fulfillLicenseRequirements` -- Not need to override. Check that the defined license is available and copy it in the component prefix in order to be included in the resulting tarball
-  * `postInstall` -- Can be overriden. Common tasks that execute after the install
-  * `minify` -- Not need to override. Remove unnecesary files or folders and strip binary files generated
+ * `initialize` -- Can be overriden. Will prepare environment variables and configuration options for the entire workflow
+ * `cleanup` -- Not need to override. Will remove files from previous builds if found
+ * `extract` -- Not need to override. Will extract the source tarball
+ * `copyExtraFiles` -- Not need to override. Will copy extra files defined in `stack.json` (explained at the end of the document)
+ * `patch` -- Not need to override. Will apply the patch specified in `stack.json` (explained at the end of the document)
+ * `postExtract` -- Can be overriden. Common tasks that execute after extract
+ * `build` -- Can be overriden. Contain build instructions
+ * `postBuild` -- Can be overriden. Common tasks that execute after the build
+ * `install` -- Can be overriden. Copy the compiled files to the right directory
+ * `fulfillLicenseRequirements` -- Not need to override. Check that the defined license is available and copy it in the component prefix in order to be included in the resulting tarball
+ * `postInstall` -- Can be overriden. Common tasks that execute after the install
+ * `minify` -- Not need to override. Remove unnecesary files or folders and strip binary files generated
 
 ### CompiledComponent
 
@@ -247,13 +247,13 @@ This class will modify the common methods and add compilation logic following th
 
 ```
 build()
-  configure(configureOptions()) -- `configureOptions` is a 'getter' method that should return an array with the arguments that the configure script will use (see the example below)
-    configure Unix command
-  make() -- will call the
-    make Unix command
+ configure(configureOptions()) -- `configureOptions` is a 'getter' method that should return an array with the arguments that the configure script will use (see the example below)
+   configure Unix command
+ make() -- will call the
+   make Unix command
 install()
-  make(install)
-  make install Unix command
+ make(install)
+ make install Unix command
 ```
 
 Every method can be overriden or recalled with `super` to set up specific configurations or build commands.
@@ -269,9 +269,9 @@ This class behaves the same as `MakeComponent` but the default prefix path will 
 'use strict';
 
 class Zlib extends Library {
-  configureOptions() {
-    return ['--shared'];
-  }
+ configureOptions() {
+   return ['--shared'];
+ }
 }
 
 module.exports = Zlib;
@@ -285,44 +285,43 @@ It will populate the flags related to the dependencies with info about their pre
 Example:
 ```
 configureOptions() {
-    const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
-      '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
-    const components = {
-      'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
-        '--with-http_ssl_module', '--with-mail_ssl_module'],
-      'zlib': ['--with-zlib={{srcDir}}'],
-      'pcre': ['--with-pcre={{srcDir}}']
-    };
-    return _.union(this.componentList.populateFlagsFromDependencies(components), list);
-  }
+   const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
+     '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
+   const components = {
+     'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
+       '--with-http_ssl_module', '--with-mail_ssl_module'],
+     'zlib': ['--with-zlib={{srcDir}}'],
+     'pcre': ['--with-pcre={{srcDir}}']
+   };
+   return _.union(this.componentList.populateFlagsFromDependencies(components), list);
+ }
 ```
 
 # Examples
 ## Build a single component
-Let's build the `zlib` library with Blacksmith.
-We would need:
+In order to build the `zlib` library with Blacksmith, you would need:
 
-  * The source code of `zlib`
-  * A folder where to store the build instructions:
-    * A `metadata.json` file for `zlib` component
-    * A `index.js` file defining the compilation instructions for `zlib`
+ * The source code of `zlib`. It can be found at the [zlib official page's download section](http://www.zlib.net/)
+ * A folder where to store the build instructions:
+   * A `metadata.json` file for `zlib` component
+   * A `index.js` file defining the compilation instructions for `zlib`
 
 >NOTE: This example will assume you have the source tarballs in `/tmp/tarballs` and the recipes in `/tmp/blacksmith-recipes/<component>/`
 
->NOTE: The folder name should be the same as the id of the component to be built
+>NOTE: The folder name should be the same as the id of the component to be built.
 
 ### metadata.json
 ```
 {
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
+ "id": "zlib",
+ "latest": "1.2.8",
+ "licenses": [
+   {
+     "type": "ZLIB",
+     "licenseRelativePath": "README",
+     "main": true
+   }
+ ]
 }
 ```
 ### index.js
@@ -330,9 +329,9 @@ We would need:
 'use strict';
 
 class Zlib extends Library {
-  configureOptions() {
-    return ['--shared'];
-  }
+ configureOptions() {
+   return ['--shared'];
+ }
 }
 
 module.exports = Zlib;
@@ -353,27 +352,27 @@ blacksm INFO  artifacts: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64
 blacksm INFO  config: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/config
 ```
 
-Blacksmith generated the tarball with the built component in the `artifacts` folder.
+Blacksmith will generate the tarball with the built component in the `artifacts` folder.
 
 ## Build a component and its dependencies
-There are components that depends on others to be able to build. For example, **Nginx** webserver requires `zlib`, `pcre` and `openssl` in order to be built.
+There are components that depend on others to be able to build. For example, **Nginx** webserver requires `zlib`, `pcre` and `openssl` in order to be built.
 
-First of all, we need the source code and the `metadata.json` and `index.js` (recipe) files for every component:
+First of all, obtain the source code and the `metadata.json` and `index.js` (recipe) files for every component:
 
 ### File descriptions
 
 #### zlib metadata.json
 ```
 {
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
+ "id": "zlib",
+ "latest": "1.2.8",
+ "licenses": [
+   {
+     "type": "ZLIB",
+     "licenseRelativePath": "README",
+     "main": true
+   }
+ ]
 }
 ```
 #### zlib index.js
@@ -381,9 +380,9 @@ First of all, we need the source code and the `metadata.json` and `index.js` (re
 'use strict';
 
 class Zlib extends Library {
-  configureOptions() {
-    return ['--shared'];
-  }
+ configureOptions() {
+   return ['--shared'];
+ }
 }
 
 module.exports = Zlib;
@@ -391,15 +390,15 @@ module.exports = Zlib;
 #### pcre metadata.json
 ```
 {
-  "id": "pcre",
-  "latest": "8.31",
-  "licenses": [
-    {
-      "type": "BSD3",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
+ "id": "pcre",
+ "latest": "8.31",
+ "licenses": [
+   {
+     "type": "BSD3",
+     "licenseRelativePath": "README",
+     "main": true
+   }
+ ]
 }
 ```
 #### pcre index.js
@@ -407,9 +406,9 @@ module.exports = Zlib;
 'use strict';
 
 class Pcre extends Library {
-  configureOptions() {
-    return ['--disable-libtool-lock', '--disable-cpp', '--enable-utf'];
-  }
+ configureOptions() {
+   return ['--disable-libtool-lock', '--disable-cpp', '--enable-utf'];
+ }
 }
 
 module.exports = Pcre;
@@ -417,15 +416,15 @@ module.exports = Pcre;
 #### openssl metadata.json
 ```
 {
-  "id": "openssl",
-  "latest": "1.0.2i",
-  "licenses": [
-    {
-      "type": "OpenSSL",
-      "licenseRelativePath": "LICENSE",
-      "main": true
-    }
-  ]
+ "id": "openssl",
+ "latest": "1.0.2i",
+ "licenses": [
+   {
+     "type": "OpenSSL",
+     "licenseRelativePath": "LICENSE",
+     "main": true
+   }
+ ]
 }
 ```
 #### openssl index.js
@@ -433,25 +432,25 @@ module.exports = Pcre;
 'use strict';
 
 class OpenSSL extends Library {
-  configureOptions() {
-    return [`--openssldir=${this.prefix}/openssl`, 'no-idea', 'no-mdc2', 'no-rc5', 'shared'];
-  }
-  initialize() {
-    this.supportsParallelBuild = false;
-  }
-  configure() {
-    $file.substitute(this.srcDir,
-                     '$dir/cacert.pem',
-                     path.join(this.prefix, 'openssl/certs/ca-bundle.crt'),
-                     {recursive: true});
-    super.configure();
-    this.make('depend');
-  }
-  postInstall() {
-    $file.mkdir(path.join(this.prefix, 'openssl/certs/'));
-    $file.copy(path.join(this.extraFilesDir, 'curl-ca-bundle-20100521.crt'),
-               path.join(this.prefix, 'openssl/certs/ca-bundle.crt'));
-  }
+ configureOptions() {
+   return [`--openssldir=${this.prefix}/openssl`, 'no-idea', 'no-mdc2', 'no-rc5', 'shared'];
+ }
+ initialize() {
+   this.supportsParallelBuild = false;
+ }
+ configure() {
+   $file.substitute(this.srcDir,
+                    '$dir/cacert.pem',
+                    path.join(this.prefix, 'openssl/certs/ca-bundle.crt'),
+                    {recursive: true});
+   super.configure();
+   this.make('depend');
+ }
+ postInstall() {
+   $file.mkdir(path.join(this.prefix, 'openssl/certs/'));
+   $file.copy(path.join(this.extraFilesDir, 'curl-ca-bundle-20100521.crt'),
+              path.join(this.prefix, 'openssl/certs/ca-bundle.crt'));
+ }
 }
 
 module.exports = OpenSSL;
@@ -459,15 +458,15 @@ module.exports = OpenSSL;
 #### nginx metadata.json
 ```
 {
-  "id": "nginx",
-  "latest": "1.10.1",
-  "licenses": [
-    {
-      "type": "BSD2",
-      "licenseRelativePath": "LICENSE",
-      "main": true
-    }
-  ]
+ "id": "nginx",
+ "latest": "1.10.1",
+ "licenses": [
+   {
+     "type": "BSD2",
+     "licenseRelativePath": "LICENSE",
+     "main": true
+   }
+ ]
 }
 ```
 #### nginx index.js
@@ -475,23 +474,23 @@ module.exports = OpenSSL;
 'use strict';
 
 class Nginx extends MakeComponent {
-  postExtract() {
-    const configureFlags = '--disable-shared --disable-libtool-lock --disable-cpp';
-    $file.substitute(path.join(this.srcDir, 'auto/lib/pcre/make'),
-                     {'./configure --disable-shared': `./configure ${configureFlags}`});
-    $file.substitute(path.join(this.srcDir, 'auto/options'), {'NGX_RPATH=NO': 'NGX_RPATH=YES'});
-  }
-  configureOptions() {
-    const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
-      '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
-    const components = {
-      'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
-        '--with-http_ssl_module', '--with-mail_ssl_module'],
-      'zlib': ['--with-zlib={{srcDir}}'],
-      'pcre': ['--with-pcre={{srcDir}}']
-    };
-    return _.union(this.componentList.populateFlagsFromDependencies(components), list);
-  }
+ postExtract() {
+   const configureFlags = '--disable-shared --disable-libtool-lock --disable-cpp';
+   $file.substitute(path.join(this.srcDir, 'auto/lib/pcre/make'),
+                    {'./configure --disable-shared': `./configure ${configureFlags}`});
+   $file.substitute(path.join(this.srcDir, 'auto/options'), {'NGX_RPATH=NO': 'NGX_RPATH=YES'});
+ }
+ configureOptions() {
+   const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
+     '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
+   const components = {
+     'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
+       '--with-http_ssl_module', '--with-mail_ssl_module'],
+     'zlib': ['--with-zlib={{srcDir}}'],
+     'pcre': ['--with-pcre={{srcDir}}']
+   };
+   return _.union(this.componentList.populateFlagsFromDependencies(components), list);
+ }
 }
 
 module.exports = Nginx;
@@ -511,29 +510,29 @@ In order to reproduce a specific build, you can put up a json file describing th
 #### nginx.json
 ```
 {
-  "platform": "linux-x64",
-  "components": [
-    {
-      "version": "1.2.8",
-      "id": "zlib",
-      "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz"
-    },
-    {
-      "id": "pcre",
-      "sourceTarball": "/tmp/tarballs/pcre-8.31.tar.gz"
-    },
-    {
-      "id": "openssl",
-      "sourceTarball": "/tmp/tarballs/openssl-1.0.2i.tar.gz"
-    },
-    {
-      "extraFiles": [
-        "/tmp/extraFiles/curl-ca-bundle-20100521.crt"
-      ];
-      "id": "nginx",
-      "sourceTarball": "/tmp/tarballs/nginx-1.10.1.tar.gz"
-    }
-  ]
+ "platform": "linux-x64",
+ "components": [
+   {
+     "version": "1.2.8",
+     "id": "zlib",
+     "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz"
+   },
+   {
+     "id": "pcre",
+     "sourceTarball": "/tmp/tarballs/pcre-8.31.tar.gz"
+   },
+   {
+     "id": "openssl",
+     "sourceTarball": "/tmp/tarballs/openssl-1.0.2i.tar.gz"
+   },
+   {
+     "extraFiles": [
+       "/tmp/extraFiles/curl-ca-bundle-20100521.crt"
+     ];
+     "id": "nginx",
+     "sourceTarball": "/tmp/tarballs/nginx-1.10.1.tar.gz"
+   }
+ ]
 }
 ```
 
