@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/bitnami/blacksmith-base-components.svg?branch=master)](http://travis-ci.org/bitnami/blacksmith-base-components)
+
 # Blacksmith Base Components
 
 These are the base component types for Blacksmith recipes.
