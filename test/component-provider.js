@@ -65,7 +65,7 @@ describe('Component Provider', () => {
     expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
 
-  it('obtains a recipe using a metadata server', () => {
+  xit('obtains a recipe using a metadata server', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test, {
       id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
@@ -99,7 +99,7 @@ describe('Component Provider', () => {
     expect(() => cp.getRecipe('no-exists')).to.throw('404');
   });
 
-  it('prioritizes the source of metadata', () => {
+  xit('prioritizes the source of metadata', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
