@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/bitnami/blacksmith-core.svg?branch=master)](http://travis-ci.org/bitnami/blacksmith-core)
+
 # Blacksmith core
 
 This is the core of the compilation system.
