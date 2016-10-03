@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/bitnami/blacksmith-containerized-build.svg?branch=master)](http://travis-ci.org/bitnami/blacksmith-containerized-build)
+
 # Blacksmith Containerized Build Command
 
 This module allows to build components in an isolated container image using blacksmith
