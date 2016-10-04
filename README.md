@@ -1,4 +1,3 @@
-
 # Blacksmith
 
 Blacksmith is a command line tool based on NodeJS designed to build third-party software and its dependencies on a Unix platform.
@@ -48,7 +47,7 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
     * A `metadata.json` file for `zlib` component
     * A `index.js` file defining the compilation instructions for `zlib`
 
->NOTE: This example will assume you have the source tarballs in /tmp/tarballs and the recipes in /tmp/blacksmith-recipes/<component>/
+>NOTE: This example will assume you have the source tarballs in `/tmp/tarballs` and the recipes in `/tmp/blacksmith-recipes/<component>/`
 
 
 #### metadata.json
@@ -81,7 +80,7 @@ module.exports = Zlib;
 
 ####Compilation action
 
-Configure the Blacksmith default paths to the recipe, if not already configured in config.json, and then call the actual compilation command:
+Configure the Blacksmith default paths to the recipe, if not already configured in `config.json`, and then call the actual compilation command:
 
 ```
 $> blacksmith configure path.recipes /tmp/blacksmith-recipes/
