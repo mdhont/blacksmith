@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-base-components",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "Blacksmith recipes base components types",
   "main": "index.js",
   "repository": {
@@ -17,7 +17,7 @@
     "nami-logger": "^0.0.1",
     "nami-utils": "^0.0.1",
     "tarball-utils": "bitnami/node-tarball-utils#v2.0.1",
-    "compilation-utils": "bitnami/node-compilation-utils#v1.0.1"
+    "compilation-utils": "bitnami/node-compilation-utils#v1.0.2"
   },
   "devDependencies": {
     "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",

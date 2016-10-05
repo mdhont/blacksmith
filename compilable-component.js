@@ -109,8 +109,14 @@ class CompilableComponent extends Component {
         _.pull(files, f);
       }
     });
-    const binaries = _.filter(files, f =>
-      !nfile.isLink(f) && nfile.isBinary(f) && !f.match(/.*fonts.*/) && !match(f, toKeepRegExps));
+    const binaries = _.filter(files, f => {
+      return !nfile.isLink(f) &&
+        nfile.isBinary(f) &&
+        !f.match(/.*fonts.*/) &&
+        !match(f, toKeepRegExps) &&
+        nos.runProgram('file', f).match('not stripped');
+    });
+
     if (nos.isInPath('strip')) {
       _.each(binaries, b => {
         try {
