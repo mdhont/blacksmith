@@ -114,9 +114,8 @@ class CompilableComponent extends Component {
         nfile.isBinary(f) &&
         !f.match(/.*fonts.*/) &&
         !match(f, toKeepRegExps) &&
-        nos.runProgram('file', f).match('not stripped');
+        (nos.isInPath('file') ? !!nos.runProgram('file', f).match('not stripped') : true);
     });
-
     if (nos.isInPath('strip')) {
       _.each(binaries, b => {
         try {
