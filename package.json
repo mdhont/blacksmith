@@ -1,19 +1,19 @@
 {
   "name": "blacksmith",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Bitnami Blacksmith System",
   "main": "index.js",
   "engines": {
     "node": "~6"
   },
   "dependencies": {
-    "blacksmith-containerized-build-command": "bitnami/blacksmith-containerized-build#v0.0.16",
-    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.7",
-    "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.2",
+    "blacksmith-containerized-build-command": "bitnami/blacksmith-containerized-build#v0.0.17",
+    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.8",
+    "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.3",
     "nami-utils": "^0.1.0",
     "cmd-parser": "^0.0.1",
     "blacksmith-core": "bitnami/blacksmith-core#v0.0.16",
-    "common-utils": "bitnami/node-common-utils#v2.0.0",
+    "common-utils": "bitnami/node-common-utils#v2.0.1",
     "version-utils": "bitnami/node-version-utils#v2.0.0"
   },
   "devDependencies": {
@@ -21,7 +21,7 @@
     "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.3",
     "lodash": "^3.10.1",
     "minimist": "^1.2.0",
-    "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
+    "blacksmith-test": "bitnami/blacksmith-test#v0.0.9",
     "chai": "^3.2.0",
     "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
     "chai-subset": "^1.1.0",
