@@ -16,8 +16,13 @@
   "dependencies": {
     "nami-logger": "^0.0.1",
     "nami-utils": "^0.0.1",
+<<<<<<< HEAD
     "tarball-utils": "bitnami/node-tarball-utils#v2.0.1",
     "compilation-utils": "bitnami/node-compilation-utils#v1.0.2"
+=======
+    "tarball-utils": "bitnami/node-tarball-utils#v2.0.2",
+    "compilation-utils": "bitnami/node-compilation-utils#v1.0.1"
+>>>>>>> 6d17f62e525a8c1894f0b5611008f40bfcd01cd6
   },
   "devDependencies": {
     "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
