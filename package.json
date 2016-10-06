@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-containerized-build-command",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Blacksmith commands to build components in a container",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/bitnami/blacksmith-containerized-build-command.git"
   },
   "dependencies": {
-    "docker-utils": "bitnami/node-docker-utils#v2.2.2",
+    "docker-utils": "bitnami/node-docker-utils#v2.3.2",
     "nami-utils": "^0.1.0",
     "strftime": "^0.9.2"
   },
