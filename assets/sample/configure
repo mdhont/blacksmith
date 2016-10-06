@@ -3,5 +3,11 @@ if [[ "$1" == --prefix* ]]; then
     # Binary file
     prefix=$(echo $1 | cut -f2 -d=)
     mkdir -p $prefix
-    echo -n -e \\x48\\x00\\x49\\x00 > $prefix/sample
+    SCRIPT=$0
+    if [ -h $SCRIPT ]; then
+      SCRIPT=`readlink $SCRIPT`
+    fi
+    DIR=`cd $(dirname $SCRIPT) && pwd`
+    cp -r $DIR/* $prefix/
 fi
+echo "configure"

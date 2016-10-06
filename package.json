@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-test",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Bitnami Blacksmith Test Utilities",
   "engines": {
     "node": "~6"

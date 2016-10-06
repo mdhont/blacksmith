@@ -1,4 +1,5 @@
 all:
-	true
+	echo "this is a test"
+
 install:
-	true
+	echo "this is an installation"
