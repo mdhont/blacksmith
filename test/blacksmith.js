@@ -22,7 +22,8 @@ describe('Blacksmith', () => {
     const bs = new Blacksmith(config);
     expect(bs.config.conf).to.be.eql(config.conf);
   });
-  it('builds a sample package', () => {
+  it('builds a sample package', function() {
+    this.timeout('4000');
     const log = {};
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
