@@ -93,9 +93,12 @@ describe('Containerized Builder', function() {
   });
 
   it('opens a shell', () => {
+    const previousENV = Object.assign({}, process.env);
+    process.env.NO_TTY = 1;
     spawn('node', [path.join(__dirname, './lib/shell.js')], { // Opens a spawn process with the shell
       stdio: [process.stdin, 'ignore', process.stderr]
     });
+    process.env = previousENV;
     let running = false;
     let retries = 0;
     let blacksmithContainer = null;
