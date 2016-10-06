@@ -14,7 +14,7 @@
     "url": "https://github.com/bitnami/blacksmith-core.git"
   },
   "dependencies": {
-    "common-utils": "bitnami/node-common-utils#v2.0.0",
+    "common-utils": "bitnami/node-common-utils#v2.0.1",
     "nami-logger": "^0.0.1",
     "nami-utils": "^0.0.1",
     "strftime": "^0.9.2",
