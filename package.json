@@ -20,7 +20,7 @@
     "compilation-utils": "bitnami/node-compilation-utils#v1.0.2"
   },
   "devDependencies": {
-    "blacksmith-test": "bitnami/blacksmith-test#v0.0.8",
+    "blacksmith-test": "bitnami/blacksmith-test#v0.0.9",
     "eslint": "^2.11.1",
     "eslint-config-bitnami": "bitnami/eslint-config-bitnami#v1.0.0",
     "eslint-plugin-import": "^1.8.1",
