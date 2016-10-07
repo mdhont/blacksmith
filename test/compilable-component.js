@@ -135,10 +135,11 @@ describe('CompilableComponent', () => {
       ['ImageMagick', 'testfonts'].forEach((bin) => {
         nfile.copy(path.join(testEnv.prefix, 'example'), path.join(testEnv.prefix, bin));
       });
+      const nonStrippedFileSize = fs.statSync(path.join(testEnv.prefix, 'example')).size;
       compilableComponent.minify();
-      expect(fs.statSync(path.join(testEnv.prefix, 'example')).size).to.be.below(8656);
-      expect(fs.statSync(path.join(testEnv.prefix, 'ImageMagick')).size).to.be.equal(8656);
-      expect(fs.statSync(path.join(testEnv.prefix, 'testfonts')).size).to.be.equal(8656);
+      expect(fs.statSync(path.join(testEnv.prefix, 'example')).size).to.be.below(nonStrippedFileSize);
+      expect(fs.statSync(path.join(testEnv.prefix, 'ImageMagick')).size).to.be.equal(nonStrippedFileSize);
+      expect(fs.statSync(path.join(testEnv.prefix, 'testfonts')).size).to.be.equal(nonStrippedFileSize);
       const files = fs.readdirSync(testEnv.prefix);
       ['ImageMagick', 'ImageMagick.a', 'docs', 'example', 'libruby-static.a',
       'libv8.test.a', 'man', 'test', 'testfonts'].forEach((ff) => expect(files).to.contain(ff));
