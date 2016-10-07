@@ -7,6 +7,7 @@ const fs = require('fs');
 const chai = require('chai');
 const chaiFs = require('chai-fs');
 const nfile = require('nami-utils').file;
+const spawnSync = require('child_process').spawnSync;
 const expect = chai.expect;
 chai.use(chaiFs);
 
@@ -126,18 +127,22 @@ describe('CompilableComponent', () => {
     });
 
     it('should strip example binary', () => {
-      ['example', 'ImageMagick', 'testfonts'].forEach((bin) => {
-        nfile.copy(path.join(__dirname, 'fixtures', 'example'), path.join(sampleDir, bin));
+      testEnv.prefix = path.join(testEnv.prefix, 'sample');
+      const component = helpers.createComponent(testEnv);
+      spawnSync('tar', ['zvxf', component.sourceTarball], {
+        cwd: testEnv.prefix
       });
+      ['ImageMagick', 'testfonts'].forEach((bin) => {
+        nfile.copy(path.join(testEnv.prefix, 'example'), path.join(testEnv.prefix, bin));
+      });
+      const nonStrippedFileSize = fs.statSync(path.join(testEnv.prefix, 'example')).size;
       compilableComponent.minify();
-      expect(fs.statSync(path.join(sampleDir, 'example')).size).to.be.below(8656);
-      expect(fs.statSync(path.join(sampleDir, 'ImageMagick')).size).to.be.equal(8656);
-      expect(fs.statSync(path.join(sampleDir, 'testfonts')).size).to.be.equal(8656);
-      const files = fs.readdirSync(sampleDir);
-      expect(files).to.eql(
-        ['ImageMagick', 'ImageMagick.a', 'docs', 'example', 'libruby-static.a',
-         'libv8.test.a', 'man', 'test', 'testfonts']
-      );
+      expect(fs.statSync(path.join(testEnv.prefix, 'example')).size).to.be.below(nonStrippedFileSize);
+      expect(fs.statSync(path.join(testEnv.prefix, 'ImageMagick')).size).to.be.equal(nonStrippedFileSize);
+      expect(fs.statSync(path.join(testEnv.prefix, 'testfonts')).size).to.be.equal(nonStrippedFileSize);
+      const files = fs.readdirSync(testEnv.prefix);
+      ['ImageMagick', 'ImageMagick.a', 'docs', 'example', 'libruby-static.a',
+      'libv8.test.a', 'man', 'test', 'testfonts'].forEach((ff) => expect(files).to.contain(ff));
       expect(path.join(sampleDir, 'man')).to.be.a.directory().and.empty;
       expect(path.join(sampleDir, 'docs')).to.be.a.directory().and.empty;
     });

@@ -245,12 +245,14 @@ describe('Component', () => {
 
   describe('Component~extract', () => {
     let component = null;
+    let componentFixture = null;
     let testEnv = null;
 
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
       component = new Component(metadata);
+      componentFixture = helpers.createComponent(testEnv, metadata);
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
 
@@ -260,14 +262,11 @@ describe('Component', () => {
     });
 
     it('"extract" should unpack tarball', () => {
-      childProcess.execSync(
-        `tar czf ${path.join(testEnv.testDir, 'example.tar.gz')} exampleA`,
-        {cwd: path.join(__dirname, 'fixtures')}
-      );
-      component.sourceTarball = path.join(testEnv.testDir, 'example.tar.gz');
-      const sampleDir = path.join(testEnv.sandbox, 'sample-1.0.0');
+      component.sourceTarball = componentFixture.sourceTarball;
       component.extract();
-      expect(path.join(sampleDir, 'exampleA.txt')).to.be.a.file();
+      expect(path.join(
+        testEnv.sandbox, `${component.metadata.id}-${component.metadata.version}`, 'exampleA/exampleA.txt'
+      )).to.be.a.file();
     });
   });
 
