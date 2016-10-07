@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-base-components",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Blacksmith recipes base components types",
   "main": "index.js",
   "repository": {

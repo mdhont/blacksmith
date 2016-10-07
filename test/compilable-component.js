@@ -102,7 +102,7 @@ describe('CompilableComponent', () => {
     });
 
     afterEach('clean environment', () => {
-      // helpers.cleanTestEnv();
+      helpers.cleanTestEnv();
     });
 
     it('should clean up the sample folder with noDoc enable', () => {
