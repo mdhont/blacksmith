@@ -50,7 +50,7 @@ describe('MakeComponent', () => {
 
     it('"make" method should execute the command passed as arguments', () => {
       expect(makeComponent.make('test', 'install', {logger: null})).
-      to.be.match(/.*this is a test.*\n*this is an installation.*/);
+      to.be.match(/.*this is a test.*\n*.*this is an installation.*/);
     });
 
     it('"install" method should execute the install command of the Makefile', () => {
