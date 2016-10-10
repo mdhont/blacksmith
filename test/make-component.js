@@ -4,7 +4,6 @@
 const MakeComponent = require('../make-component');
 const path = require('path');
 const fs = require('fs');
-const nutil = require('nami-utils').file;
 const chai = require('chai');
 const expect = chai.expect;
 const helpers = require('blacksmith-test');
