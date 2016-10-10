@@ -5,7 +5,6 @@ const Component = require('../component');
 const helpers = require('blacksmith-test');
 const path = require('path');
 const fs = require('fs');
-const childProcess = require('child_process');
 const chai = require('chai');
 const chaiFs = require('chai-fs');
 const expect = chai.expect;
