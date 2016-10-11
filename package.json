@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-containerized-build-command",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Blacksmith commands to build components in a container",
   "main": "index.js",
   "repository": {
