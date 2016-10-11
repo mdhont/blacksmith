@@ -228,7 +228,7 @@ describe('Summary', () => {
         if (_.isObject(v) && !_.isRegExp(v)) {
           expect(toCheck[k]).to.be.eql(v);
         } else {
-          expect(!!toCheck[k].toString().match(v), 'Malformed JSON').to.be.true; // eslint-disable-line
+          expect(!!toCheck[k].toString().match(v), 'Malformed JSON').to.be.eql(true);
         }
       });
     };
