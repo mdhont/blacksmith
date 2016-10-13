@@ -79,7 +79,7 @@ describe('Summary', () => {
       },
       sourceTarball: 'test.tar.gz'
     };
-    summary.addArtifact(component, {test: 1});
+    summary.addArtifact(component);
     const artifact = summary.artifacts[0];
     _.each(component, (v, k) => {
       expect(artifact[k]).to.be.eql(v);
@@ -101,7 +101,7 @@ describe('Summary', () => {
       prefix: test.prefix,
       srcDir: test.buildDir
     };
-    summary.addArtifact(component, {test: 1});
+    summary.addArtifact(component);
     /* eslint-disable no-unused-expressions */
     expect(
       path.join(artifactsDir, `${component.metadata.id}-${component.metadata.version}-linux-x64.tar.gz`)
@@ -188,16 +188,19 @@ describe('Summary', () => {
     });
     const summary = new Summary(be);
     fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
-    const component = {
+    class Library {}
+    class Component extends Library {}
+    const component = new Component();
+    _.extend(component, {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: test.prefix,
       mainLicense: {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz'
-    };
-    summary.addArtifact(component, {test: 1});
+      sourceTarball: 'test.tar.gz',
+    });
+    summary.addArtifact(component);
     summary.end();
     const expectedResult = {
       'buildTime': 0,
@@ -216,7 +219,8 @@ describe('Summary', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      'sourceTarball': 'test.tar.gz'
+      'sourceTarball': 'test.tar.gz',
+      'parentClass': 'Library'
     };
     const obtainedResult = JSON.parse(summary.toJson({test: 2}));
     const check = function(toCheck, valid) {
@@ -224,7 +228,7 @@ describe('Summary', () => {
         if (_.isObject(v) && !_.isRegExp(v)) {
           expect(toCheck[k]).to.be.eql(v);
         } else {
-          expect(!!toCheck[k].toString().match(v)).to.be.true; // eslint-disable-line no-unused-expressions
+          expect(!!toCheck[k].toString().match(v), 'Malformed JSON').to.be.eql(true);
         }
       });
     };
@@ -251,7 +255,7 @@ describe('Summary', () => {
       },
       sourceTarball: 'test.tar.gz'
     };
-    summary.addArtifact(component, {test: 1});
+    summary.addArtifact(component);
     summary.end();
     summary.serialize(test.buildDir);
     const md5 = crypto.createHash('md5');

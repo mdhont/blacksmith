@@ -19,7 +19,8 @@ describe('Artifact', () => {
       compiledTarball: {
         path: 'compiled-test.tar.gz',
         md5: 'testmd5'
-      }
+      },
+      parentClass: 'Library'
     };
     const result = {
       metadata: {id: 'component', version: '1.0.0'},
@@ -33,7 +34,8 @@ describe('Artifact', () => {
       compiledTarball: {
         path: 'compiled-test.tar.gz',
         md5: 'testmd5'
-      }
+      },
+      parentClass: 'Library'
     };
     const artifact = new Artifact(inputObject);
     _.each(result, (v, k) => expect(artifact[k]).to.be.eql(v));
