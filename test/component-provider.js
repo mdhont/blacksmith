@@ -217,6 +217,7 @@ describe('Component Provider', () => {
         {version: '>=2.0', platforms: ['linux-x64'], class: sample2}
       ];`
     );
+    expect(cp.getComponent({id: component.id}).constructor.name, 'Bad class resolution').to.be.eql('sample1');
     expect(cp.getComponent({
       id: component.id, version: '1.0.0'
     }).constructor.name, 'Bad class resolution').to.be.eql('sample1');
