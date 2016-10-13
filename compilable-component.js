@@ -109,16 +109,17 @@ class CompilableComponent extends Component {
         _.pull(files, f);
       }
     });
-    const binaries = _.filter(files, f => {
+    const filesToStrip = _.filter(files, f => {
       return !nfile.isLink(f) &&
         nfile.isBinary(f) &&
         !f.match(/.*fonts.*/) &&
         !match(f, toKeepRegExps) &&
-        nos.runProgram('file', f).match('not stripped');
+        (nos.isInPath('file') ? // If 'file' command is not in the system it may strip a binary several times
+          !!nos.runProgram('file', f).match('not stripped') // Checks that the file has not been already stripped
+          : true);
     });
-
     if (nos.isInPath('strip')) {
-      _.each(binaries, b => {
+      _.each(filesToStrip, b => {
         try {
           this.logger.trace('Stripping binary file ', b);
           nos.runProgram('strip', b, {logger: null});
