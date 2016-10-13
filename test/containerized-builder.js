@@ -16,7 +16,7 @@ describe('Containerized Builder', function() {
     helpers.cleanTestEnv();
   });
   afterEach('clean environment', () => {
-    // helpers.cleanTestEnv();
+    helpers.cleanTestEnv();
   });
   it('creates an instance successfully', () => {
     const cb = new ContainerizedBuilder(utilities.getBlacksmithInstance());
