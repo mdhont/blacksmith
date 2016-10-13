@@ -203,4 +203,28 @@ describe('Component Provider', () => {
     expect(() => cp.getComponent(component.id, {version: '~2'})).to.throw('Not found any version satisfying ~2');
     expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
+  it('obtains a component class based on requirements', () => {
+    const test = helpers.createTestEnv();
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const component = helpers.createComponent(test, {id: 'sample'});
+    fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
+      'use strict';
+      class sample1 extends Library {}
+      class sample2 extends Library {}
+      module.exports = [
+        {version: '<2.0', platforms: ['linux'], class: sample1},
+        {version: '>=2.0', platforms: ['linux-x64'], class: sample2}
+      ];`
+    );
+    expect(cp.getComponent({
+      id: component.id, version: '1.0.0'
+    }).constructor.name, 'Bad class resolution').to.be.eql('sample1');
+    expect(cp.getComponent({
+      id: component.id, version: '2.0.0'
+    }).constructor.name, 'Bad class resolution').to.be.eql('sample2');
+    expect(cp.getComponent(component.id, {
+      platform: 'linux-x64'
+    }).constructor.name, 'Bad class resolution').to.be.eql('sample2');
+  });
 });

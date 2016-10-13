@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-core",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Blacksmith core builder",
   "main": "index.js",
   "scripts": {
@@ -33,8 +33,8 @@
     "mocha": "^3.0.2",
     "nock": "^8.0.0",
     "gulp": "^3.9.1",
-    "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.3",
-    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.7"
+    "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.4",
+    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.10"
   },
   "optionalDependencies": {
     "anvil-client": "0.0.3"
