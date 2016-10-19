@@ -3,6 +3,6 @@ node_modules
 flycheck_*.js
 tools
 npm-debug.log
-/app/runtimes/*
-!/app/runtimes/README
+/runtimes/*
+!/runtimes/README
 /artifacts
