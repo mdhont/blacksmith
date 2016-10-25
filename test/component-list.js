@@ -175,6 +175,25 @@ describe('Component List', () => {
       expect(componentList._components[0][k]).to.be.eql(v);
     });
   });
+  it('adds a several time with different information', () => {
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test);
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const be = new BuildEnvironment({
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox
+    });
+    const componentList = new ComponentList([], cp, be, config);
+    componentList.add({id: component.id, version: '123.123.123', patches: ['/test.patch']}, be, cp, config);
+    componentList.add(`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`, be, cp, config);
+    const desiredResult = _getComponentProperties(component, be, componentList);
+    desiredResult.patches = ['/test.patch'];
+    _.each(desiredResult, (v, k) => {
+      expect(componentList._components[0][k]).to.be.eql(v);
+    });
+  });
   it('gets a component', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
