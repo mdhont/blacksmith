@@ -4,6 +4,7 @@ const Summary = require('../lib/build-manager/artifacts/summary');
 const BuildEnvironment = require('../lib/build-manager/build-environment');
 const helpers = require('blacksmith-test');
 const path = require('path');
+const os = require('os');
 const _ = require('lodash');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -103,7 +104,8 @@ describe('Summary', () => {
     summary.addArtifact(component);
     /* eslint-disable no-unused-expressions */
     expect(
-      path.join(artifactsDir, `${component.metadata.id}-${component.metadata.version}-linux-x64.tar.gz`)
+      path.join(artifactsDir,
+        `${component.metadata.id}-${component.metadata.version}-${os.platform()}-${os.arch()}.tar.gz`)
     ).to.be.file;
     /* eslint-enable no-unused-expressions */
   });
@@ -258,15 +260,37 @@ describe('Summary', () => {
     summary.end();
     summary.serialize(test.buildDir);
     const md5 = crypto.createHash('md5');
-    md5.update(fs.readFileSync(path.join(test.buildDir, 'serialize-test-linux-x64.tar.gz')));
+
+    md5.update(fs.readFileSync(path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}.tar.gz`)));
     const resultMD5 = md5.digest('hex');
     const expectedResult = {
-      'tarball': 'serialize-test-linux-x64.tar.gz',
+      'tarball': `serialize-test-${os.platform()}-${os.arch()}.tar.gz`,
       'md5': resultMD5
     };
     const result = JSON.parse(
-      fs.readFileSync(path.join(test.buildDir, 'serialize-test-linux-x64-build.json')).toString()
+      fs.readFileSync(path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-build.json`)).toString()
     );
     expect(_.pick(result, ['tarball', 'md5'])).to.be.eql(expectedResult);
+  });
+  it('serializes the result with a custom platform', () => {
+    const test = helpers.createTestEnv();
+    const be = new BuildEnvironment({
+      sourcePaths: [test.assetsDir],
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox,
+      platform: {os: 'linux', arch: 'x86', distro: 'debian'}
+    });
+    const summary = new Summary(be);
+    fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
+    const component = {
+      metadata: {id: 'component', version: '1.0.0'},
+      prefix: test.prefix,
+      srcDir: test.buildDir
+    };
+    summary.addArtifact(component);
+    summary.end();
+    summary.serialize(test.buildDir);
+    expect(path.join(test.buildDir, `${component.id}-${component.version}-linux-x86-debian.tar.gz`)).to.be.file; // eslint-disable-line no-unused-expressions
   });
 });
