@@ -24,8 +24,7 @@ describe('Summary', () => {
     const result = {
       _fsTracker: null,
       _artifactsDir: null,
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       root: '/tmp/blacksmith_test_env/prefix',
       artifacts: [],
       startTime: process.hrtime()[0],
@@ -205,7 +204,7 @@ describe('Summary', () => {
     const expectedResult = {
       'buildTime': 0,
       'prefix': test.prefix,
-      'platform': 'linux-x64',
+      platform: {os: 'linux', arch: 'x64'},
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`)
     };
     const expectedArtifact = {
