@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-core",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Blacksmith core builder",
   "main": "index.js",
   "scripts": {
