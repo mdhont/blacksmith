@@ -116,8 +116,10 @@ Example:
 ```
 $> bs inspect zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
 {
-    "platform": "linux-x64",
-    "flavor": null,
+    "platform": {
+       "os": "linux",
+       "arch": "x64"
+    },
     "components": [
         {
             "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz",
@@ -510,7 +512,10 @@ In order to reproduce a specific build, you can put up a JSON file describing th
 #### nginx.json
 ```
 {
-  "platform": "linux-x64",
+  "platform": {
+     "os": "linux",
+     "arch": "x64"
+  },
   "components": [
     {
       "version": "1.2.8",

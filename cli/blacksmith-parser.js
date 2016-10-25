@@ -195,15 +195,13 @@ class BlacksmithParser extends Parser {
     }, [
       {name: 'output-file'},
       {name: 'json', type: 'string', description: 'JSON file containing the specification of what to build'},
-      {name: 'platform', default: 'linux-x64'},
-      {name: 'flavor'}
     ]);
 
     this.addCommand({
       name: 'build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
       callback: function() {
         const opts = _.opts(parser.parseOptions(this, {camelize: true}), {abortOnError: true, forceRebuild: false,
-          containerRoot: null, incrementalTracking: false, continueAt: null, flavor: null, platform: 'linux-x64'});
+          containerRoot: null, incrementalTracking: false, continueAt: null, platform: null});
         const buildData = parser.parseRequestedComponents(this.providedArguments, opts.json);
         parser.blacksmith.build(buildData, opts);
       }
@@ -217,10 +215,7 @@ class BlacksmithParser extends Parser {
       description: 'Create separate tarballs for each of the individual components built'},
       {name: 'build-id', description: 'Build identifier used to name certain directories and tarballs. ' +
       'It defaults to the lastest built component'},
-      {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'},
-      {name: 'platform', default: 'linux-x64', description: 'Platform to build for'},
-      {name: 'flavor', default: '', description: 'Flavor of the build. Allows tweaking some of the components.' +
-      'For example, \'alpine\', will make some Alpine patches to be applied'}
+      {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'}
     ], {
       'compilation.maxJobs': {name: 'max-jobs', description: 'Max parallel jobs. Defaults to the number of cores+1'},
       'compilation.prefix': {name: 'prefix', description: 'Compilation prefix'}
