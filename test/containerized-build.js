@@ -10,6 +10,7 @@ const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const helpers = require('blacksmith-test');
+const os = require('os');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
@@ -78,7 +79,7 @@ describe('#containerized-build()', function() {
       path.join(
         test.buildDir,
         'artifacts',
-        `${component.buildSpec['build-id']}-linux-x64-${component.buildSpec.flavor}.tar.gz`
+        `${component.buildSpec['build-id']}-${os.platform()}-${os.arch()}.tar.gz`
       )
     ).to.be.file();
     // Modifies the log level
@@ -87,8 +88,6 @@ describe('#containerized-build()', function() {
     expect(path.join(test.buildDir, 'test.log')).to.be.file();
     // Modifies the build directory - T12761
     expect(buildResult.stdout).to.contain(`Command successfully executed. Find its results under ${test.buildDir}`);
-    // Modifies the flavor
-    expect(buildResult.stdout).to.contain(`"flavor":"${component.buildSpec.flavor}"`);
     // Uses incremental tracking
     expect(
       path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64.tar.gz`)
@@ -118,7 +117,7 @@ describe('#containerized-build()', function() {
     expect(continueBuildRes.stdout).
     to.contain(`Skipping component ${component.id} ${component.version} because of continueAt=${component2.id}`);
     expect(
-      path.join(test.buildDir, 'artifacts', `${component2.id}-linux-x64-${component2.buildSpec.flavor}.tar.gz`)
+      path.join(test.buildDir, 'artifacts', `${component2.id}-${os.platform()}-${os.arch()}.tar.gz`)
     ).to.be.file();
   });
   it('Can open a shell and list component content', function() {
