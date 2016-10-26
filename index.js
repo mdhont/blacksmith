@@ -21,7 +21,7 @@ module.exports = [{
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
       const availableImages = parser.configHandler.get('containerizedBuild.images');
-      if (!availableImages) throw new Error(`Not found any available image in the configuration`);
+      if (_.isEmpty(availableImages)) throw new Error(`Not found any available image in the configuration`);
       const imageId = opts.imageId ||
         utilities.getImage(availableImages, buildData.platform);
       containerizedBuilder.build(buildData, imageId, opts);
