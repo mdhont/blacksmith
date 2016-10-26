@@ -6,6 +6,7 @@ const fs = require('fs');
 const spawnSync = require('child_process').spawnSync;
 const testDir = '/tmp/blacksmith_test_env';
 const nock = require('nock');
+const os = require('os');
 
 function createTestEnv(conf) {
   const componentDir = path.join(testDir, 'componentDir');
@@ -78,8 +79,7 @@ function createComponent(test, options) {
   };
   fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
   const buildSpec = {
-    platform: 'linux-x64',
-    flavor: 'test',
+    platform: {os: os.platform(), arch: os.arch()},
     'build-id': `${componentId}-test`,
     'build-dir': test.buildDir,
     components: [
@@ -160,8 +160,7 @@ function addNotFoundEntries(server, paths) {
 
 function getDummyBuildEnvironment(test, config) {
   const result = _.defaults(config || {}, {
-    platform: 'linux-x64',
-    flavor: null,
+    platform: {os: os.platform(), arch: os.arch()},
     outputDir: test.buildDir,
     prefixDir: test.prefix,
     maxParallelJobs: Infinity,
@@ -171,8 +170,6 @@ function getDummyBuildEnvironment(test, config) {
   });
   result.target = {
     platform: result.platform,
-    flavor: result.flavor,
-    arch: result.platform.match(/x64/) ? 'x64' : 'x86',
     isUnix: true
   };
   result.envVars = {};
