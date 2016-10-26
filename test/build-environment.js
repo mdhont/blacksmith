@@ -5,6 +5,7 @@ const path = require('path');
 const _ = require('lodash');
 const helpers = require('blacksmith-test');
 const chai = require('chai');
+const os = require('os');
 const expect = chai.expect;
 
 describe('Build Manager', () => {
@@ -17,8 +18,7 @@ describe('Build Manager', () => {
   it('creates an instance successfully', () => {
     const test = helpers.createTestEnv();
     const params = {
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,
@@ -27,15 +27,14 @@ describe('Build Manager', () => {
     };
     const be = new BuildEnvironment(params);
     const desiredBM = {
-      'platform': 'linux-x64',
-      'flavor': null,
+      'platform': {'os': 'linux', 'arch': 'x64'},
       'outputDir': test.buildDir,
       'prefixDir': test.prefix,
       'maxParallelJobs': Infinity,
       'sandboxDir': test.sandbox,
       'artifactsDir': path.join(test.buildDir, 'artifacts'),
       'logsDir': path.join(test.buildDir, 'logs'),
-      'target': {'platform': 'linux-x64', 'flavor': null, 'arch': 'x64', 'isUnix': true},
+      'target': {platform: {os: os.platform(), arch: os.arch()}, 'isUnix': true},
       '_envVarHandler': {
         '_environmentVars': {
           'CC': 'gcc',
@@ -51,8 +50,7 @@ describe('Build Manager', () => {
   it('add and gets an environment variable', () => {
     const test = helpers.createTestEnv();
     const params = {
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,
@@ -67,8 +65,7 @@ describe('Build Manager', () => {
   it('add and gets several environment variables', () => {
     const test = helpers.createTestEnv();
     const params = {
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,
@@ -84,8 +81,7 @@ describe('Build Manager', () => {
   it('reset environment variables', () => {
     const test = helpers.createTestEnv();
     const params = {
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,

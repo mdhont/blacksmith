@@ -32,8 +32,7 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config);
     const component = helpers.createComponent(test);
     const desiredResult = {
-      platform: 'linux-x64',
-      flavor: null,
+      platform: {os: 'linux', arch: 'x64'},
       components: [
         {
           sourceTarball: `${test.assetsDir}/${component.id}-${component.version}.tar.gz`,
@@ -56,18 +55,8 @@ describe('Build Manager', () => {
     const component = helpers.createComponent(test);
     const metadata = bm.getComponentsMetadata([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {platform: 'linux'});
-    expect(metadata.platform).to.be.eql('linux');
-  });
-  it('modifies flavor from metadata', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const bm = new BuildManager(config);
-    const component = helpers.createComponent(test);
-    const metadata = bm.getComponentsMetadata([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {flavor: 'alpine'});
-    expect(metadata.flavor).to.be.eql('alpine');
+    ], {platform: {os: 'linux', arch: 'x86', distro: 'debian', version: '8'}});
+    expect(metadata.platform).to.be.eql({os: 'linux', arch: 'x86', distro: 'debian', version: '8'});
   });
   it('obtains component based on object', () => {
     const test = helpers.createTestEnv();
@@ -75,8 +64,7 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config);
     const component = helpers.createComponent(test);
     const desiredResult = {
-      platform: 'linux',
-      flavor: 'alpine',
+      platform: {os: 'linux', arch: 'x64'},
       components: [
         {
           sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
@@ -95,8 +83,7 @@ describe('Build Manager', () => {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const bm = new BuildManager(config);
     const defaultConfig = {
-      'platform': 'linux-x64',
-      'flavor': null,
+      'platform': {'os': 'linux', 'arch': 'x64'},
       'outputDir': test.testDir,
       'prefixDir': test.prefix,
       'maxParallelJobs': Infinity,
@@ -104,9 +91,7 @@ describe('Build Manager', () => {
       'artifactsDir': null,
       'logsDir': path.join(test.testDir, 'logs'),
       'target': {
-        'platform': 'linux-x64',
-        'flavor': null,
-        'arch': 'x64',
+        'platform': {'os': 'linux', 'arch': 'x64'},
         'isUnix': true
       }
     };
@@ -117,11 +102,9 @@ describe('Build Manager', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const bm = new BuildManager(config);
-    bm.createBuildEnvironment({platform: 'linux', flavor: 'alpine'});
+    bm.createBuildEnvironment({platform: {os: 'linux', arch: 'x86', distro: 'debian', version: '8'}});
     const modifiedTarget = {
-      'platform': 'linux',
-      'flavor': 'alpine',
-      'arch': 'x86',
+      'platform': {os: 'linux', arch: 'x86', distro: 'debian', version: '8'},
       'isUnix': true
     };
     expect(bm.be.target).to.be.eql(modifiedTarget);
@@ -151,7 +134,7 @@ describe('Build Manager', () => {
     ], {forceRebuild: true});
     expect(log.text).to.not.contain('Skipping build step');
   });
-  it('builds a sample package modifying platform and flavor', () => {
+  it('builds a sample package modifying platform', () => {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
@@ -159,15 +142,13 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config, {logger: helpers.getDummyLogger(log)});
     bm.build([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {platform: 'linux', flavor: 'alpine'});
+    ], {platform: {os: 'linux', arch: 'x86'}});
     const modifiedTarget = {
-      'platform': 'linux',
-      'flavor': 'alpine',
-      'arch': 'x86',
+      platform: {os: 'linux', arch: 'x86'},
       'isUnix': true
     };
     expect(bm.be.target).to.be.eql(modifiedTarget);
-    expect(log.text).to.contain('Building for target {"platform":"linux","flavor":"alpine"}');
+    expect(log.text).to.contain('Building for target {"os":"linux","arch":"x86"}');
   });
   it('continues at a different component', () => {
     const log = {};
