@@ -4,6 +4,7 @@ const ContainerizedBuilder = require('./lib/containerized-builder');
 const nfile = require('nami-utils').file;
 const _ = require('nami-utils/lodash-extra');
 const dockerUtils = require('docker-utils');
+const utilities = require('./lib/utilities');
 
 module.exports = [{
   name: 'containerized-build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
@@ -14,15 +15,15 @@ module.exports = [{
         abortOnError: true, forceRebuild: false,
         containerRoot: null, imageId: null,
         incrementalTracking: true, continueAt: null,
-        flavor: null, platform: 'linux-x64', json: '', modulesPaths: parser.blacksmith.config.get('paths.tarballs')
+        json: '', modulesPaths: parser.blacksmith.config.get('paths.tarballs')
       });
       const buildData = parser.parseRequestedComponents(this.providedArguments, opts.json);
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
-      const imageId = _.isEmpty(opts.imageId) ?
-        parser.configHandler.get('containerizedBuild.defaultImage') :
-        opts.imageId;
-      if (_.isEmpty(imageId)) throw new Error('You should configure a default image to use');
+      const availableImages = parser.configHandler.get('containerizedBuild.images');
+      if (_.isEmpty(availableImages)) throw new Error(`Not found any available image in the configuration`);
+      const imageId = opts.imageId ||
+        utilities.getImage(availableImages, buildData.platform);
       containerizedBuilder.build(buildData, imageId, opts);
     }
     return callback;
@@ -38,10 +39,7 @@ module.exports = [{
       {name: 'build-id', description: 'Build identifier used to name certain directories and tarballs. ' +
       'It defaults to the lastest built component'},
       {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'},
-      {name: 'image-id', description: 'Docker image ID to use. Auto by default'},
-      {name: 'platform', default: 'linux-x64', description: 'Platform to build for'},
-      {name: 'flavor', default: '', description: 'Flavor of the build. Allows tweaking some of the components.' +
-      'For example, \'alpine\', will make some Alpine patches to be applied'}
+      {name: 'image-id', description: 'Docker image ID to use. Auto by default'}
   ], configurationBasedOptions: {
     'paths.output': {name: 'output', description: 'Output directory containing all build dirs'},
     'compilation.maxJobs': {name: 'max-jobs', description: 'Max parallel jobs. Defaults to the number of cores+1'},
@@ -61,10 +59,10 @@ module.exports = [{
         nfile.join(this.arguments['build-dir'], 'config/components.json')
       );
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith, opts);
-      const imageId = _.isEmpty(opts.imageId) ?
-        parser.configHandler.get('containerizedBuild.defaultImage') :
-        opts.imageId;
-      if (_.isEmpty(imageId)) throw new Error('You should configure a default image to use');
+      const availableImages = JSON.parse(nfile.read(
+        nfile.join(this.arguments['build-dir'], 'config/config.json'))).containerizedBuild.images;
+      const imageId = opts.imageId || utilities.getImage(availableImages);
+      if (_.isEmpty(imageId)) throw new Error('Not found the image description in the previous build');
       containerizedBuilder.dockerShell(this.arguments['build-dir'], imageId, _.assign({buildData}, opts));
     }
     return callback;

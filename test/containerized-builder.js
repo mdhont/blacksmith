@@ -59,20 +59,17 @@ describe('Containerized Builder', function() {
       utilities.baseImage,
       {
         buildDir: test.buildDir,
-        forceRebuild: true,
+        forceRebuild: false,
         containerRoot: path.join(test.buildDir, 'root'),
-        continueAt: component.name,
+        continueAt: component.id,
         incrementalTracking: true,
-        flavor: 'test',
-        platform: 'linux',
         exitOnEnd: false
       }
     );
     // Validate parameters
     expect(log.text).to.contain(`--config /opt/blacksmith/config/config.json`);
     expect(log.text).to.contain(`--json /opt/blacksmith/config/components.json`);
-    expect(log.text).to.contain(`--platform=linux`);
-    expect(log.text).to.contain(`--flavor=test`);
+    expect(log.text).to.contain(`--continue-at=${component.id}`);
     expect(log.text).to.contain(`--incremental-tracking`);
     // Validate config and component content
     const configRes = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/config.json')));
@@ -85,11 +82,72 @@ describe('Containerized Builder', function() {
         recipes: [test.componentDir]
       },
       compilation: {prefix: test.prefix},
-      metadataServer: config.metadataServer
+      metadataServer: config.metadataServer,
+      containerizedBuild: {
+        images: [{id: utilities.baseImage}]
+      }
     };
     expect(configRes).to.be.eql(desiredConf);
     const components = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
     expect(components).to.be.eql([`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`]);
+  });
+
+  it('cannot allow to force the rebuild and continue at some point', () => {
+    const log = {};
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test);
+    const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
+    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const cb = new ContainerizedBuilder(blacksmithInstance);
+    expect(() => cb.build(
+      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
+      utilities.baseImage,
+      {
+        buildDir: test.buildDir,
+        forceRebuild: true,
+        containerRoot: path.join(test.buildDir, 'root'),
+        continueAt: component.id,
+        incrementalTracking: true,
+        exitOnEnd: false
+      }
+    )).to.throw('You cannot use --force-rebuild and --continue-at in the same build');
+  });
+
+  it('parses component properties as an object', () => {
+    const log = {};
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test);
+    const blacksmithTool = utilities.createDummyBlacksmith(test);
+    const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
+    config.metadataServer = {activate: true, prioritize: true, endPoint: 'test'};
+    config.paths.rootDir = blacksmithTool;
+    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const cb = new ContainerizedBuilder(blacksmithInstance);
+    fs.writeFileSync(path.join(test.buildDir, 'test.patch'), 'PATCH');
+    fs.writeFileSync(path.join(test.buildDir, 'test.extra'), 'EXTRA');
+    cb.build({
+      components: [{
+        id: component.id,
+        version: component.version,
+        sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
+        patches: [path.join(test.buildDir, 'test.patch')],
+        extraFiles: [path.join(test.buildDir, 'test.extra')]
+      }]
+    }, utilities.baseImage, {
+      buildDir: test.buildDir,
+      exitOnEnd: false
+    });
+    const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
+    const desiredResult = {components: [
+      {
+        'sourceTarball': `/tmp/sources/${component.id}-${component.version}.tar.gz`,
+        'patches': ['/tmp/sources/test.patch'],
+        'extraFiles': ['/tmp/sources/test.extra'],
+        'id': component.id,
+        'version': component.version
+      }
+    ]};
+    expect(result).to.be.eql(desiredResult);
   });
 
   it('opens a shell', () => {
