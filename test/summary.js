@@ -291,6 +291,8 @@ describe('Summary', () => {
     summary.addArtifact(component);
     summary.end();
     summary.serialize(test.buildDir);
-    expect(path.join(test.buildDir, `${component.id}-${component.version}-linux-x86-debian.tar.gz`)).to.be.file; // eslint-disable-line no-unused-expressions
+    expect(  // eslint-disable-line no-unused-expressions
+      path.join(test.buildDir, `${component.id}-${component.version}-linux-x86-debian.tar.gz`)
+    ).to.be.file;
   });
 });
