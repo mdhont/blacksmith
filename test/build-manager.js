@@ -148,7 +148,7 @@ describe('Build Manager', () => {
       'isUnix': true
     };
     expect(bm.be.target).to.be.eql(modifiedTarget);
-    expect(log.text).to.contain('Building for target {"os":"linux","arch":"x86"}');
+    expect(log.text).to.contain('Building for target {"arch":"x86","os":"linux"}');
   });
   it('continues at a different component', () => {
     const log = {};
