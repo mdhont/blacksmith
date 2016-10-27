@@ -7,6 +7,7 @@ const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const helpers = require('blacksmith-test');
+const os = require('os');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
@@ -76,7 +77,7 @@ describe('#build()', function() {
       path.join(
         test.buildDir,
         'artifacts',
-        `${component.buildSpec['build-id']}-linux-x64-${component.buildSpec.flavor}.tar.gz`
+        `${component.buildSpec['build-id']}-${os.platform()}-${os.arch()}.tar.gz`
       )
     ).to.be.file();
     expect(res.stdout).to.contain('Build completed. Artifacts stored');
@@ -86,8 +87,6 @@ describe('#build()', function() {
     expect(path.join(test.buildDir, 'test.log')).to.be.file();
     // Modifies the build directory
     expect(res.stdout).to.contain(`Build completed. Artifacts stored under '${test.buildDir}`);
-    // Modifies the flavor
-    expect(res.stdout).to.contain(`"flavor":"${component.buildSpec.flavor}"`);
     // Uses incremental tracking
     expect(
       path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64.tar.gz`)

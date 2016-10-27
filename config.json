@@ -17,6 +17,12 @@
       "blacksmith-containerized-build-command"
   ],
   "containerizedBuild": {
-    "defaultImage": "gcr.io/bitnami-containers/bitnami-base-buildpack"
+    "images": [{
+      "id": "gcr.io/bitnami-containers/bitnami-base-buildpack",
+      "platform": {
+        "os": "linux",
+        "arch": "x64"
+      }
+    }]
   }
 }

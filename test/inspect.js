@@ -30,7 +30,6 @@ describe('#inspect()', function() {
   after(helpers.cleanTestEnv);
 
   function check(res) {
-    expect(res).to.contain(`"flavor": "${component1.buildSpec.flavor}"`);
     expect(res).to.contain(`"id": "${component1.id}"`);
     expect(res).to.contain(`"version": "${component1.version}"`);
     expect(res).to.contain(`"id": "${component2.id}"`);
