@@ -7,6 +7,9 @@ const helpers = require('blacksmith-test');
 const getBlacksmithInstance = (config, log) => {
   return {
     config: new helpers.DummyConfigHandler(config),
+    bm: {
+      createBuildEnvironment: () => {}
+    },
     logger: helpers.getDummyLogger(log)
   };
 };
