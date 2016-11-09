@@ -4,7 +4,6 @@ const ContainerizedBuilder = require('./lib/containerized-builder');
 const nfile = require('nami-utils').file;
 const _ = require('nami-utils/lodash-extra');
 const dockerUtils = require('docker-utils');
-const utilities = require('./lib/utilities');
 
 module.exports = [{
   name: 'containerized-build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
@@ -12,8 +11,7 @@ module.exports = [{
     function callback() {
       dockerUtils.verifyConnection();
       const opts = _.opts(parser.parseOptions(this, {camelize: true}), {
-        abortOnError: true, forceRebuild: false,
-        containerRoot: null, imageId: null,
+        abortOnError: true, forceRebuild: false, imageId: null,
         incrementalTracking: true, continueAt: null,
         json: '', modulesPaths: parser.blacksmith.config.get('paths.tarballs')
       });
@@ -60,12 +58,11 @@ module.exports = [{
     'compilation.prefix': {name: 'prefix', description: 'Compilation prefix'}
   }
 }, {
-  name: 'shell', minArgs: 1, maxArgs: 0, namedArgs: ['build-dir'],
+  name: 'shell', minArgs: 1, maxArgs: 1, namedArgs: ['build-dir'],
   callback: function(parser) {
     function callback() {
       dockerUtils.verifyConnection();
       const opts = _.opts(parser.parseOptions(this, {camelize: true}), {
-        containerRoot: null,
         imageId: null,
         config: parser.blacksmith.config
       });
@@ -83,7 +80,6 @@ module.exports = [{
     return callback;
   },
   options: [
-        {name: 'image-id', description: 'Image ID to use'},
-        {name: 'containerRoot', description: 'Root directory to map into the image'}
+        {name: 'image-id', description: 'Image ID to use'}
   ]
 }];
