@@ -25,7 +25,7 @@ describe('Summary', () => {
     const result = {
       _fsTracker: null,
       _artifactsDir: null,
-      platform: {os: 'linux', arch: 'x64'},
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       root: '/tmp/blacksmith_test_env/prefix',
       artifacts: [],
       startTime: process.hrtime()[0],
@@ -33,6 +33,7 @@ describe('Summary', () => {
     };
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -182,6 +183,7 @@ describe('Summary', () => {
   it('writes a JSON report', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -206,7 +208,7 @@ describe('Summary', () => {
     const expectedResult = {
       'buildTime': 0,
       'prefix': test.prefix,
-      platform: {os: 'linux', arch: 'x64'},
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`)
     };
     const expectedArtifact = {
@@ -240,6 +242,7 @@ describe('Summary', () => {
   it('serializes the result', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
+      platform: {distro: 'debian', version: '8'},
       sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -261,14 +264,18 @@ describe('Summary', () => {
     summary.serialize(test.buildDir);
     const md5 = crypto.createHash('md5');
 
-    md5.update(fs.readFileSync(path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}.tar.gz`)));
+    md5.update(fs.readFileSync(
+      path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-debian-8.tar.gz`)
+    ));
     const resultMD5 = md5.digest('hex');
     const expectedResult = {
-      'tarball': `serialize-test-${os.platform()}-${os.arch()}.tar.gz`,
+      'tarball': `serialize-test-${os.platform()}-${os.arch()}-debian-8.tar.gz`,
       'md5': resultMD5
     };
     const result = JSON.parse(
-      fs.readFileSync(path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-build.json`)).toString()
+      fs.readFileSync(
+        path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-debian-8-build.json`)
+      ).toString()
     );
     expect(_.pick(result, ['tarball', 'md5'])).to.be.eql(expectedResult);
   });
@@ -279,7 +286,7 @@ describe('Summary', () => {
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,
-      platform: {os: 'linux', arch: 'x86', distro: 'debian'}
+      platform: {os: 'linux', arch: 'x86', distro: 'debian', version: '8'}
     });
     const summary = new Summary(be);
     fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
