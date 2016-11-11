@@ -8,11 +8,16 @@ const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const helpers = require('blacksmith-test');
 const os = require('os');
+const glob = require('glob');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
 chai.use(chaiFs);
 
+function _platform(component) {
+  return `${component.buildSpec.platform.os}-${component.buildSpec.platform.arch}` +
+  `-${component.buildSpec.platform.distro}-${component.buildSpec.platform.version}`;
+}
 
 describe('#build()', function() {
   this.timeout(120000);
@@ -27,8 +32,11 @@ describe('#build()', function() {
     const res = blacksmithHandler.exec(
       `--config ${test.configFile} build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
-    expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-linux-x64.tar.gz`)).to.be.file();
+    const artifact = glob.sync(path.join(
+      test.buildDir, `artifacts/${component.id}-${component.version}-stack-${os.platform()}-${os.arch()}-*.tar.gz`
+    ));
+    expect(artifact.length).to.be.eql(1);
+    expect(artifact[0]).to.be.file();
     expect(path.join(test.sandbox, componentFolder, 'LICENSE')).to.be.file();
     expect(res.stdout).to.contain(`prefix=${test.prefix}`);
   });
@@ -48,8 +56,9 @@ describe('#build()', function() {
     const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
     `--config ${test.configFile} --log-level debug build --build-dir ${test.buildDir} ` +
     `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
-    expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-linux-x64.tar.gz`)).to.be.file();
+    expect(path.join(
+      test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
+    ).to.be.file();
     expect(path.join(test.sandbox, componentFolder, 'LICENSE')).to.be.file();
     expect(res.stdout).to.contain(`Contacting the metadata server to obtain info about ${component.id}`);
   });
@@ -77,7 +86,7 @@ describe('#build()', function() {
       path.join(
         test.buildDir,
         'artifacts',
-        `${component.buildSpec['build-id']}-${os.platform()}-${os.arch()}.tar.gz`
+        `${component.buildSpec['build-id']}-${_platform(component)}.tar.gz`
       )
     ).to.be.file();
     expect(res.stdout).to.contain('Build completed. Artifacts stored');
@@ -88,9 +97,9 @@ describe('#build()', function() {
     // Modifies the build directory
     expect(res.stdout).to.contain(`Build completed. Artifacts stored under '${test.buildDir}`);
     // Uses incremental tracking
-    expect(
-      path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64.tar.gz`)
-    ).to.be.file();
+    expect(path.join(
+      test.buildDir, 'artifacts/components', `${component.id}-${component.version}-${_platform(component)}.tar.gz`
+    )).to.be.file();
     // Modifies the prefix
     expect(path.join(test.buildDir, 'common')).to.be.a.path();
     // Modifies the maximum number of jobs
