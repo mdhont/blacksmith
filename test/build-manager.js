@@ -31,22 +31,19 @@ describe('Build Manager', () => {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const bm = new BuildManager(config);
     const component = helpers.createComponent(test);
-    const desiredResult = {
-      platform: {os: 'linux', arch: 'x64'},
-      components: [
-        {
-          sourceTarball: `${test.assetsDir}/${component.id}-${component.version}.tar.gz`,
-          patches: [],
-          extraFiles: [],
-          version: component.version,
-          id: component.id
-        }
-      ]
-    };
+    const desiredComponents = [
+      {
+        sourceTarball: `${test.assetsDir}/${component.id}-${component.version}.tar.gz`,
+        patches: [],
+        extraFiles: [],
+        version: component.version,
+        id: component.id
+      }
+    ];
     const metadata = bm.getComponentsMetadata([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
     ]);
-    expect(metadata).to.be.eql(desiredResult);
+    expect(metadata.components).to.be.eql(desiredComponents);
   });
   it('modifies platform from metadata', () => {
     const test = helpers.createTestEnv();
@@ -64,7 +61,7 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config);
     const component = helpers.createComponent(test);
     const desiredResult = {
-      platform: {os: 'linux', arch: 'x64'},
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       components: [
         {
           sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
@@ -83,17 +80,12 @@ describe('Build Manager', () => {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const bm = new BuildManager(config);
     const defaultConfig = {
-      'platform': {'os': 'linux', 'arch': 'x64'},
       'outputDir': test.testDir,
       'prefixDir': test.prefix,
       'maxParallelJobs': Infinity,
       'sandboxDir': test.sandbox,
-      'artifactsDir': null,
+      'artifactsDir': path.join(test.testDir, 'artifacts'),
       'logsDir': path.join(test.testDir, 'logs'),
-      'target': {
-        'platform': {'os': 'linux', 'arch': 'x64'},
-        'isUnix': true
-      }
     };
     bm.createBuildEnvironment();
     _.each(defaultConfig, (v, k) => expect(bm.be[k]).to.be.eql(v));
@@ -142,13 +134,13 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config, {logger: helpers.getDummyLogger(log)});
     bm.build([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {platform: {os: 'linux', arch: 'x86'}});
+    ], {platform: {os: 'linux', arch: 'x86', distro: 'debian', version: '8'}});
     const modifiedTarget = {
-      platform: {os: 'linux', arch: 'x86'},
+      platform: {os: 'linux', distro: 'debian', arch: 'x86', version: '8'},
       'isUnix': true
     };
     expect(bm.be.target).to.be.eql(modifiedTarget);
-    expect(log.text).to.contain('Building for target {"arch":"x86","os":"linux"}');
+    expect(log.text).to.contain('Building for target {"arch":"x86","os":"linux","distro":"debian","version":"8"}');
   });
   it('continues at a different component', () => {
     const log = {};
@@ -172,9 +164,13 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config, {logger: helpers.getDummyLogger()});
     bm.build([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {incrementalTracking: true, buildDir: test.buildDir});
+    ], {
+      incrementalTracking: true,
+      buildDir: test.buildDir,
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'}
+    });
     expect(
-      path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64.tar.gz`)
+      path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64-debian-8.tar.gz`)
     ).to.be.file();
   });
   it('setup the buildId', () => {
@@ -184,9 +180,13 @@ describe('Build Manager', () => {
     const bm = new BuildManager(config, {logger: helpers.getDummyLogger()});
     bm.build([
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], {buildDir: test.buildDir, buildId: 'blacksmith-test'});
+    ], {
+      buildDir: test.buildDir,
+      buildId: 'blacksmith-test',
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'}
+    });
     expect(
-      path.join(test.buildDir, 'artifacts/blacksmith-test-linux-x64.tar.gz')
+      path.join(test.buildDir, 'artifacts/blacksmith-test-linux-x64-debian-8.tar.gz')
     ).to.be.file();
   });
 });

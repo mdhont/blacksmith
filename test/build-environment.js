@@ -5,10 +5,9 @@ const path = require('path');
 const _ = require('lodash');
 const helpers = require('blacksmith-test');
 const chai = require('chai');
-const os = require('os');
 const expect = chai.expect;
 
-describe('Build Manager', () => {
+describe('Build environment', () => {
   before('prepare environment', () => {
     helpers.cleanTestEnv();
   });
@@ -18,7 +17,7 @@ describe('Build Manager', () => {
   it('creates an instance successfully', () => {
     const test = helpers.createTestEnv();
     const params = {
-      platform: {os: 'linux', arch: 'x64'},
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,
@@ -26,15 +25,15 @@ describe('Build Manager', () => {
       logsDir: path.join(test.buildDir, 'logs')
     };
     const be = new BuildEnvironment(params);
-    const desiredBM = {
-      'platform': {'os': 'linux', 'arch': 'x64'},
+    const desiredBE = {
+      'platform': {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       'outputDir': test.buildDir,
       'prefixDir': test.prefix,
       'maxParallelJobs': Infinity,
       'sandboxDir': test.sandbox,
       'artifactsDir': path.join(test.buildDir, 'artifacts'),
       'logsDir': path.join(test.buildDir, 'logs'),
-      'target': {platform: {os: os.platform(), arch: os.arch()}, 'isUnix': true},
+      'target': {platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'}, 'isUnix': true},
       '_envVarHandler': {
         '_environmentVars': {
           'CC': 'gcc',
@@ -45,7 +44,7 @@ describe('Build Manager', () => {
         }
       }
     };
-    _.each(desiredBM, (v, k) => expect(be[k]).to.be.eql(v));
+    _.each(desiredBE, (v, k) => expect(be[k]).to.be.eql(v));
   });
   it('add and gets an environment variable', () => {
     const test = helpers.createTestEnv();
