@@ -10,12 +10,15 @@ const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const helpers = require('blacksmith-test');
-const os = require('os');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
 chai.use(chaiFs);
 
+function _platform(component) {
+  return `${component.buildSpec.platform.os}-${component.buildSpec.platform.arch}` +
+  `-${component.buildSpec.platform.distro}-${component.buildSpec.platform.version}`;
+}
 
 describe('#containerized-build()', function() {
   this.timeout(240000);
@@ -34,7 +37,7 @@ describe('#containerized-build()', function() {
       `containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-linux-x64.tar.gz`)
+      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
     ).to.be.file();
   });
   it('Propagates the metadata server configureation', function() {
@@ -56,7 +59,7 @@ describe('#containerized-build()', function() {
       `--config ${test.configFile} --log-level trace containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-linux-x64.tar.gz`)
+      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
     ).to.be.file();
     expect(
       JSON.parse(fs.readFileSync(path.join(test.buildDir, `config/config.json`), {encoding: 'utf-8'})).metadataServer
@@ -79,9 +82,23 @@ describe('#containerized-build()', function() {
       path.join(
         test.buildDir,
         'artifacts',
-        `${component.buildSpec['build-id']}-${os.platform()}-${os.arch()}.tar.gz`
+        `${component.buildSpec['build-id']}-${_platform(component)}.tar.gz`
       )
     ).to.be.file();
+    expect(
+      path.join(
+        test.buildDir,
+        'artifacts',
+        `${component.buildSpec['build-id']}-${_platform(component)}-build.json`
+      )
+    ).to.be.file();
+    // Basic summary content test
+    const summary = JSON.parse(fs.readFileSync(path.join(
+      test.buildDir,
+      'artifacts',
+      `${component.buildSpec['build-id']}-${_platform(component)}-build.json`
+    )));
+    expect(summary).to.include.keys(['prefix', 'platform', 'artifacts', 'tarball', 'md5']);
     // Modifies the log level
     expect(buildResult.stdout).to.contain('blacksm TRACE ENVIRONMENT VARIABLES');
     // Set the log file
@@ -89,9 +106,9 @@ describe('#containerized-build()', function() {
     // Modifies the build directory - T12761
     expect(buildResult.stdout).to.contain(`Command successfully executed. Find its results under ${test.buildDir}`);
     // Uses incremental tracking
-    expect(
-      path.join(test.buildDir, 'artifacts/components', `${component.id}-${component.version}-linux-x64.tar.gz`)
-    ).to.be.file();
+    expect(path.join(
+      test.buildDir, 'artifacts/components', `${component.id}-${component.version}-${_platform(component)}.tar.gz`
+    )).to.be.file();
     // Modifies the prefix
     expect(buildResult.stdout).to.contain(`--prefix=${test.buildDir}`);
     // Modifies the maximum number of jobs
@@ -117,7 +134,7 @@ describe('#containerized-build()', function() {
     expect(continueBuildRes.stdout).
     to.contain(`Skipping component ${component.id} ${component.version} because of continueAt=${component2.id}`);
     expect(
-      path.join(test.buildDir, 'artifacts', `${component2.id}-${os.platform()}-${os.arch()}.tar.gz`)
+      path.join(test.buildDir, 'artifacts', `${component2.id}-${_platform(component2)}.tar.gz`)
     ).to.be.file();
   });
   it('Can open a shell and list component content', function() {
