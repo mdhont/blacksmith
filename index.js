@@ -79,7 +79,7 @@ function createComponent(test, options) {
   };
   fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
   const buildSpec = {
-    platform: {os: os.platform(), arch: os.arch()},
+    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
     'build-id': `${componentId}-test`,
     'build-dir': test.buildDir,
     components: [
@@ -160,7 +160,7 @@ function addNotFoundEntries(server, paths) {
 
 function getDummyBuildEnvironment(test, config) {
   const result = _.defaults(config || {}, {
-    platform: {os: os.platform(), arch: os.arch()},
+    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
     outputDir: test.buildDir,
     prefixDir: test.prefix,
     maxParallelJobs: Infinity,
