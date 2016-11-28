@@ -262,22 +262,22 @@ describe('Summary', () => {
     summary.addArtifact(component);
     summary.end();
     summary.serialize(test.buildDir);
-    const md5 = crypto.createHash('md5');
+    const sha256 = crypto.createHash('sha256');
 
-    md5.update(fs.readFileSync(
+    sha256.update(fs.readFileSync(
       path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-debian-8.tar.gz`)
     ));
-    const resultMD5 = md5.digest('hex');
+    const resultSHA256 = sha256.digest('hex');
     const expectedResult = {
       'tarball': `serialize-test-${os.platform()}-${os.arch()}-debian-8.tar.gz`,
-      'md5': resultMD5
+      'sha256': resultSHA256
     };
     const result = JSON.parse(
       fs.readFileSync(
         path.join(test.buildDir, `serialize-test-${os.platform()}-${os.arch()}-debian-8-build.json`)
       ).toString()
     );
-    expect(_.pick(result, ['tarball', 'md5'])).to.be.eql(expectedResult);
+    expect(_.pick(result, ['tarball', 'sha256'])).to.be.eql(expectedResult);
   });
   it('serializes the result with a custom platform', () => {
     const test = helpers.createTestEnv();

@@ -18,7 +18,7 @@ describe('Artifact', () => {
       sourceTarball: 'test.tar.gz',
       compiledTarball: {
         path: 'compiled-test.tar.gz',
-        md5: 'testmd5'
+        sha256: 'testsha256'
       },
       parentClass: 'Library'
     };
@@ -33,7 +33,7 @@ describe('Artifact', () => {
       sourceTarball: 'test.tar.gz',
       compiledTarball: {
         path: 'compiled-test.tar.gz',
-        md5: 'testmd5'
+        sha256: 'testsha256'
       },
       parentClass: 'Library'
     };
