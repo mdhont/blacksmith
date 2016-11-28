@@ -98,7 +98,7 @@ describe('#containerized-build()', function() {
       'artifacts',
       `${component.buildSpec['build-id']}-${_platform(component)}-build.json`
     )));
-    expect(summary).to.include.keys(['prefix', 'platform', 'artifacts', 'tarball', 'md5']);
+    expect(summary).to.include.keys(['prefix', 'platform', 'artifacts', 'tarball', 'sha256']);
     // Modifies the log level
     expect(buildResult.stdout).to.contain('blacksm TRACE ENVIRONMENT VARIABLES');
     // Set the log file
