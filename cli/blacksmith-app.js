@@ -15,16 +15,20 @@ const BlacksmithCore = require('blacksmith-core');
  */
 class BlacksmithApp {
   constructor(configFile) {
-    let config = null;
-    let opts = null;
-    if (nfile.exists(configFile)) {
-      opts = {configFile};
-      config = _.opts(JSON.parse(nfile.read(configFile)), {paths: {}});
-      config.paths.rootDir = nfile.dirname(configFile);
+    if (!nfile.exists(configFile)) {
+      if (nfile.exists(`${configFile}.sample`)) {
+        console.log(`Default configuration not found. Assuming it is the first launch. ` +
+          `Installing sample configuration`);
+        nfile.copy(`${configFile}.sample`, configFile);
+      } else {
+        throw new Error(`Configuration file not found. ${configFile} is missing`);
+      }
     }
+    const config = _.opts(JSON.parse(nfile.read(configFile)), {paths: {}});
+    config.paths.rootDir = nfile.dirname(configFile);
     const configHandler = new ConfigurationHandler(config);
     this.blacksmith = new BlacksmithCore(configHandler);
-    this._parser = new BlacksmithParser(this.blacksmith, opts);
+    this._parser = new BlacksmithParser(this.blacksmith);
   }
   run() {
     const args = process.argv.slice(2);

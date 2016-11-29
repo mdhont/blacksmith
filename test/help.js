@@ -6,17 +6,32 @@ const chai = require('chai');
 const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
+const fs = require('fs');
 const helpers = require('blacksmith-test');
 const BlacksmithHandler = helpers.Handler;
-
+const BlacksmithApp = require('../cli/blacksmith-app');
 chai.use(chaiSubset);
 chai.use(chaiFs);
 
 describe('Blacksmith App', function() {
   this.timeout(15000);
   describe('Command Line', function() {
+    afterEach(helpers.cleanTestEnv);
     const blacksmithHandler = new BlacksmithHandler();
-
+    it('throws an error if no config file is found', function() {
+      expect(() => new BlacksmithApp('no-exists')).to.throw('Configuration file not found');
+    });
+    it('installs a default configuration', function() {
+      const test = helpers.createTestEnv();
+      fs.renameSync(test.configFile, `${test.configFile}.sample`);
+      let stdout = '';
+      const log = console.log;
+      console.log = (msg) => stdout += `${msg}\n`;
+      new BlacksmithApp(test.configFile); // eslint-disable-line no-new
+      console.log = log;
+      expect(stdout).to.contain('Installing sample configuration');
+      expect(test.configFile).to.be.file();
+    });
     describe('Help Menu', function() {
       function getOptionReText(name, options) {
         options = _.defaults(options || {}, {default: '.*', type: 'string', allowed: '.*'});
@@ -47,15 +62,15 @@ describe('Blacksmith App', function() {
         /* eslint-enable new-cap, no-useless-escape, prefer-template */
         return mainHelpRe;
       }
-      it('Appears when called without arguments', function() {
+      it('appears when called without arguments', function() {
         const stdout = blacksmithHandler.exec('').stdout;
         expect(stdout).to.match(getHelpRe());
       });
-      it('Appears when called with --help', function() {
+      it('appears when called with --help', function() {
         const stdout = blacksmithHandler.exec('--help').stdout;
         expect(stdout).to.match(getHelpRe());
       });
-      it('Appears when called with wrong commands, as well as an error message', function() {
+      it('appears when called with wrong commands, as well as an error message', function() {
         const result = blacksmithHandler.exec('asdf', {abortOnError: false});
         expect(result.stdout).to.match(getHelpRe());
           // blacksmith ERROR Unknown command 'asdf'
@@ -64,7 +79,7 @@ describe('Blacksmith App', function() {
       });
     });
     describe('Version Menu', function() {
-      it('Appears when called with --version', function() {
+      it('appears when called with --version', function() {
         const stdout = blacksmithHandler.exec('--version').stdout;
           // expects something like `1.0.0`, `1.0.0-alpha1`,
           // `1.0.0 (2016-02-17 12:59:20)` or `1.0.0-alpha1 (2016-02-17 12:59:20)`

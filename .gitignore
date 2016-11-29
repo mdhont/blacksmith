@@ -6,3 +6,4 @@ npm-debug.log
 /runtimes/*
 !/runtimes/README
 /artifacts
+/config.json

@@ -19,7 +19,7 @@
 Blacksmith is a command line tool based on NodeJS designed to build thirdparty software and its dependencies on a Unix platform.
 
 # Configuration
-Blacksmith will read its configuration options from the `config.json` file located at the root directory of the tool.
+Blacksmith will read its configuration options from the `config.json` file located at the root directory of the tool. If no `config.json` is found and `config.json.sample` is present Blacksmith will install the default configuration.
 
 The configuration can be modified directly editing the file or using the command `blacksmith configure` that is explained below.
 
