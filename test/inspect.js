@@ -37,14 +37,14 @@ describe('#inspect()', function() {
   }
 
   it('Inspect component properties to stdout', function() {
-    const res = blacksmithHandler.exec(
+    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
       `--config ${test.configFile} inspect --json ${component1.buildSpecFile} ` +
       `${component2.id}:${test.assetsDir}/${component2.id}-${component2.version}.tar.gz`
     );
     check(res.stdout);
   });
   it('Inspect component properties to file', function() {
-    blacksmithHandler.exec(
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
       `--config ${test.configFile} inspect ` +
       `--output-file ${path.join(test.buildDir, 'spec.json')} ` +
       `--json ${component1.buildSpecFile} ` +

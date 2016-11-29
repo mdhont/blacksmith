@@ -35,21 +35,25 @@ describe('#configure', function() {
     return _.get(config, property);
   }
   it('It set a string property', function() {
-    blacksmithHandler.exec('configure compilation.prefix /tmp/test');
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      'configure compilation.prefix /tmp/test');
     expect(check('compilation.prefix', '/tmp/test')).to.be.eql(true);
   });
   it('It set an array property', function() {
-    blacksmithHandler.exec('configure --action set paths.recipes /tmp/test');
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      'configure --action set paths.recipes /tmp/test');
     expect(check('paths.recipes', ['/tmp/test'])).to.be.eql(true);
   });
 
   it('It adds a value to an array property', function() {
     const previousValue = get('paths.recipes');
-    blacksmithHandler.exec('configure --action add paths.recipes /tmp/test');
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      'configure --action add paths.recipes /tmp/test');
     expect(check('paths.recipes', previousValue.concat('/tmp/test'))).to.be.eql(true);
   });
   it('It unset a property', function() {
-    blacksmithHandler.exec('configure --action unset compilation.prefix');
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      'configure --action unset compilation.prefix');
     expect(get('compilation.prefix')).to.be.eql(null);
   });
 });
