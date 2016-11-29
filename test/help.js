@@ -24,11 +24,11 @@ describe('Blacksmith App', function() {
     it('installs a default configuration', function() {
       const test = helpers.createTestEnv();
       fs.renameSync(test.configFile, `${test.configFile}.sample`);
+      const oldStdoutWrite = process.stdout.write;
       let stdout = '';
-      const log = console.log;
-      console.log = (msg) => stdout += `${msg}\n`;
+      process.stdout.write = (string) => stdout += `${string}\n`;
       new BlacksmithApp(test.configFile); // eslint-disable-line no-new
-      console.log = log;
+      process.stdout.write = oldStdoutWrite;
       expect(stdout).to.contain('Installing sample configuration');
       expect(test.configFile).to.be.file();
     });
