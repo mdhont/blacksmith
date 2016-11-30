@@ -28,7 +28,7 @@ describe('Blacksmith App', function() {
       const stdoutWrite = process.stdout.write;
       try {
         process.stdout.write = (string) => stdout += `${string}\n`;
-        new BlacksmithApp('test.configFile'); // eslint-disable-line no-new
+        new BlacksmithApp(test.configFile); // eslint-disable-line no-new
         process.stdout.write = stdoutWrite;
       } catch (e) {
         process.stdout.write = stdoutWrite;
@@ -53,7 +53,7 @@ describe('Blacksmith App', function() {
           // XRegExp uses this naming and usage
           /* eslint-disable new-cap, no-useless-escape, prefer-template */
         const mainHelpRe = XRegExp(
-          '^\nUsage: blacksmith \<options\> \<command\>\n*'
+          '\nUsage: blacksmith \<options\> \<command\>\n*'
           + '\\s+where \<options\> include:\n+'
           + '--help\\s+\n+'
           + getOptionReText('log-level', {default: 'info', allowed: 'trace, debug, info, warn, error, silent'})
