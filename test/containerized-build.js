@@ -33,7 +33,8 @@ describe('#containerized-build()', function() {
   it('Builds a simple package from CLI', function() {
     const test = helpers.createTestEnv(extraConf);
     const component = helpers.createComponent(test);
-    blacksmithHandler.exec(`--config ${test.configFile} ` +
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      `--config ${test.configFile} ` +
       `containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     expect(
@@ -55,7 +56,7 @@ describe('#containerized-build()', function() {
     });
     const component = helpers.createComponent(test);
     helpers.addComponentToMetadataServer(metadataServerEndpoint, component);
-    blacksmithHandler.exec(
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
       `--config ${test.configFile} --log-level trace containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     expect(
@@ -69,7 +70,8 @@ describe('#containerized-build()', function() {
     const test = helpers.createTestEnv(extraConf);
     const component = helpers.createComponent(test);
     const jobs = 3;
-    const buildResult = blacksmithHandler.exec(`--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
+    const buildResult = blacksmithHandler.exec(
+      `--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
       `--config ${test.configFile} ` +
       'containerized-build ' +
       `--json ${component.buildSpecFile} ` +
@@ -100,7 +102,7 @@ describe('#containerized-build()', function() {
     )));
     expect(summary).to.include.keys(['prefix', 'platform', 'artifacts', 'tarball', 'sha256']);
     // Modifies the log level
-    expect(buildResult.stdout).to.contain('blacksm TRACE ENVIRONMENT VARIABLES');
+    expect(buildResult.stdout).to.match(/blacksm.*TRACE.*ENVIRONMENT VARIABLES/);
     // Set the log file
     expect(path.join(test.buildDir, 'test.log')).to.be.file();
     // Modifies the build directory - T12761
@@ -120,7 +122,8 @@ describe('#containerized-build()', function() {
     const component2 = helpers.createComponent(test, {
       id: 'sample2',
     });
-    blacksmithHandler.exec(`--config ${test.configFile} ` +
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      `--config ${test.configFile} ` +
       `containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     const continueBuildRes = blacksmithHandler.exec('--log-level trace ' +
@@ -140,7 +143,7 @@ describe('#containerized-build()', function() {
   it('Can open a shell and list component content', function() {
     const test = helpers.createTestEnv(extraConf);
     const component = helpers.createComponent(test);
-    blacksmithHandler.exec(
+    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
       `--config ${test.configFile} containerized-build --build-dir ${test.buildDir} ` +
       `--json ${component.buildSpecFile} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);

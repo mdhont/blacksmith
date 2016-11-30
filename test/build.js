@@ -29,7 +29,7 @@ describe('#build()', function() {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.exec(
+    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
       `--config ${test.configFile} build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
     const artifact = glob.sync(path.join(
@@ -74,13 +74,14 @@ describe('#build()', function() {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.exec(`--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
-    `--config ${test.configFile} ` +
-    'build --force-rebuild ' +
-    `--json ${component.buildSpecFile} ` +
-    '--incremental-tracking ' +
-    `--prefix ${test.buildDir} ` +
-    `--max-jobs ${jobs}`);
+    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+      `--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
+      `--config ${test.configFile} ` +
+      'build --force-rebuild ' +
+      `--json ${component.buildSpecFile} ` +
+      '--incremental-tracking ' +
+      `--prefix ${test.buildDir} ` +
+      `--max-jobs ${jobs}`);
     // Modifies the build ID
     expect(
       path.join(
@@ -91,7 +92,7 @@ describe('#build()', function() {
     ).to.be.file();
     expect(res.stdout).to.contain('Build completed. Artifacts stored');
     // Modifies the log level
-    expect(res.stdout).to.contain('blacksm TRACE ENVIRONMENT VARIABLES');
+    expect(res.stdout).to.match(/blacksm.*TRACE.*ENVIRONMENT VARIABLES/);
     // Set the log file
     expect(path.join(test.buildDir, 'test.log')).to.be.file();
     // Modifies the build directory
