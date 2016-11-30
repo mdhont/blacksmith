@@ -26,14 +26,13 @@ describe('Blacksmith App', function() {
       fs.renameSync(test.configFile, `${test.configFile}.sample`);
       let stdout = '';
       const stdoutWrite = process.stdout.write;
-      process.stdout.write = (string) => stdout += `${string}\n`;
       try {
+        process.stdout.write = (string) => stdout += `${string}\n`;
         new BlacksmithApp('test.configFile'); // eslint-disable-line no-new
+        process.stdout.write = stdoutWrite;
       } catch (e) {
         process.stdout.write = stdoutWrite;
         throw e;
-      } finally {
-        process.stdout.write = stdoutWrite;
       }
       expect(stdout).to.contain('Installing sample configuration');
       expect(test.configFile).to.be.file();
