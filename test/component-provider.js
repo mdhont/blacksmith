@@ -183,7 +183,7 @@ describe('Component Provider', () => {
     const component = helpers.createComponent(test);
     const componentObj = cp.getComponent(component.id);
     const desiredComponent = {
-      'patches': [], 'patchLevel': 0, 'extraFiles': [], 'pick': [], 'be': null,
+      'patches': [], 'patchLevel': 0, 'extraFiles': [], 'pick': [], 'exclude': ['.git', '.__empty_dir'], 'be': null,
       'sourceTarball': null, 'noDoc': true, 'supportsParallelBuild': true, 'id': component.id,
       'metadata': {
         'id': component.id,
