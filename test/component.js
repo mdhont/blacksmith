@@ -71,6 +71,14 @@ describe('Component', () => {
     it('should return the extraFilesDir', () => {
       expect(component.extraFilesDir).to.be.eql(path.join(sandboxDir, 'sample-1.0.0', 'extra-files'));
     });
+
+    it('should return the files to pick', () => {
+      expect(component.pick).to.be.eql([]);
+    });
+
+    it('should return the files to exclude', () => {
+      expect(component.exclude).to.be.eql(['.git', '.__empty_dir']);
+    });
   });
 
   describe('Component~validate', () => {
