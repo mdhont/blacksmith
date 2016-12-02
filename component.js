@@ -18,6 +18,7 @@ const cutils = require('compilation-utils');
  * @property {number} patchLevel - Patch level to use in the patches applied
  * @property {Array} extraFiles - Additional files to copy in the working directory
  * @property {Array} pick - Files to exclusively pick in the resulting artifact. All the installed files by default.
+ * @property {Array} exclude=['.git', '.__empty_dir'] - Files to exclude in the resulting artifact
  * @property {Object} be - {@link Blacksmith.BuildEnvironment Build Environment} to use
  * @property {Object} logger - Logger to use
  * @property {Object} metadata - Metadata of the componentList
@@ -31,6 +32,7 @@ class Component {
     this.patchLevel = 0;
     this.extraFiles = [];
     this.pick = [];
+    this.exclude = ['.git', '.__empty_dir'];
     this.be = null;
     this.logger = options.logger || new Logger();
     this.metadata = _.opts(metadata, {id: null, licenses: [], version: null});
