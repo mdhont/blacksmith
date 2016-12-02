@@ -155,6 +155,30 @@ describe('Summary', () => {
     expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.contain('hello');
     expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.not.contain('world');
   });
+  it('compress the resulting artifacts excluding some files', () => {
+    const test = helpers.createTestEnv();
+    const be = new BuildEnvironment({
+      sourcePaths: [test.assetsDir],
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox
+    });
+    const summary = new Summary(be);
+    fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
+    fs.writeFileSync(path.join(test.prefix, 'world'), 'world');
+    const component = {
+      metadata: {id: 'component', version: '1.0.0'},
+      prefix: test.prefix,
+      srcDir: test.buildDir,
+      exclude: ['hello']
+    };
+    summary.addArtifact(component);
+    const result = path.join(test.buildDir, 'result.tar.gz');
+    summary.compressArtifacts(result);
+    expect(result).to.be.file; // eslint-disable-line no-unused-expressions
+    expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.not.contain('hello');
+    expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.contain('world');
+  });
   it('compress with incrementalTracking', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({

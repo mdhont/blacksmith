@@ -11,6 +11,7 @@ describe('Artifact', () => {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: 'component_prefix',
       pick: 'component_pick',
+      exclude: 'component_exclude',
       mainLicense: {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
@@ -26,6 +27,7 @@ describe('Artifact', () => {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: 'component_prefix',
       pick: 'component_pick',
+      exclude: 'component_exclude',
       mainLicense: {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'

@@ -26,6 +26,7 @@ describe('Component List', () => {
       patchLevel: 0,
       extraFiles: [],
       pick: [],
+      exclude: ['.git', '.__empty_dir'],
       be: be,
       metadata: {
         'id': component.id,
