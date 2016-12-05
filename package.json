@@ -1,25 +1,25 @@
 {
   "name": "blacksmith",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Bitnami Blacksmith System",
   "main": "index.js",
   "engines": {
     "node": "~6"
   },
   "dependencies": {
+    "lodash": "^4.0.0",
     "blacksmith-containerized-build-command": "bitnami/blacksmith-containerized-build#v0.0.22",
-    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.11",
-    "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.4",
+    "blacksmith-base-components": "bitnami/blacksmith-base-components#v0.0.12",
+    "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.5",
     "nami-utils": "^0.1.0",
     "cmd-parser": "^0.0.1",
-    "blacksmith-core": "bitnami/blacksmith-core#v0.0.23",
+    "blacksmith-core": "bitnami/blacksmith-core#v0.0.24",
     "common-utils": "bitnami/node-common-utils#v2.0.2",
     "version-utils": "bitnami/node-version-utils#v2.0.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
     "bitnami-gulp-common-tasks": "bitnami/gulp-common-tasks#v2.0.4",
-    "lodash": "^3.10.1",
     "minimist": "^1.2.0",
     "blacksmith-test": "bitnami/blacksmith-test#v0.0.11",
     "chai": "^3.2.0",

@@ -28,7 +28,7 @@ describe('#configure', function() {
   function check(property, value) {
     const config = JSON.parse(fs.readFileSync(configFile, {encoding: 'utf-8'}));
     const actualValue = _.get(config, property);
-    return _.eq(actualValue, value);
+    return _.isEqual(actualValue, value);
   }
   function get(property) {
     const config = JSON.parse(fs.readFileSync(configFile, {encoding: 'utf-8'}));
