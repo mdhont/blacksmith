@@ -115,14 +115,14 @@ class CompilableComponent extends Component {
         !f.match(/.*fonts.*/) &&
         !match(f, toKeepRegExps) &&
         (nos.isInPath('file') ? // If 'file' command is not in the system it may strip a binary several times
-          !!nos.runProgram('file', f).match('not stripped') // Checks that the file has not been already stripped
+          !!nos.runProgram('file', `"${f}"`).match('not stripped') // Checks that the file has not been already stripped
           : true);
     });
     if (nos.isInPath('strip')) {
       _.each(filesToStrip, b => {
         try {
           this.logger.trace('Stripping binary file ', b);
-          nos.runProgram('strip', b, {logger: null});
+          nos.runProgram('strip', `"${b}"`, {logger: null});
         } catch (e) {
           // no-op
         }
