@@ -146,5 +146,17 @@ describe('CompilableComponent', () => {
       expect(path.join(sampleDir, 'man')).to.be.a.directory().and.empty;
       expect(path.join(sampleDir, 'docs')).to.be.a.directory().and.empty;
     });
+
+    it('should strip example binary with spaces in the filename', () => {
+      testEnv.prefix = path.join(testEnv.prefix, 'sample');
+      const component = helpers.createComponent(testEnv);
+      spawnSync('tar', ['zvxf', component.sourceTarball], {
+        cwd: testEnv.prefix
+      });
+      const nonStrippedFileSize = fs.statSync(path.join(testEnv.prefix, 'example')).size;
+      nfile.rename(path.join(testEnv.prefix, 'example'), path.join(testEnv.prefix, 'example with spaces'));
+      compilableComponent.minify();
+      expect(fs.statSync(path.join(testEnv.prefix, 'example with spaces')).size).to.be.below(nonStrippedFileSize);
+    });
   });
 });
