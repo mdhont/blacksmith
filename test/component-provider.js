@@ -22,7 +22,7 @@ describe('Component Provider', () => {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
     const testCP = {
-      _searchPath: [test.componentDir],
+      recipeDirectories: [test.componentDir],
       componentTypeCollections: config.get('componentTypeCollections')
     };
     _.each(testCP, (v, k) => expect(cp[k]).to.be.eql(v));
@@ -34,7 +34,7 @@ describe('Component Provider', () => {
       logger: helpers.getDummyLogger()
     });
     const testCP = {
-      _searchPath: [test.componentDir],
+      recipeDirectories: [test.componentDir],
       componentTypeCollections: config.get('componentTypeCollections'),
       logger: helpers.getDummyLogger()
     };
@@ -149,15 +149,6 @@ describe('Component Provider', () => {
     _.each(desiredRecipe, (v, k) => expect(recipe[k]).to.be.eql(v));
   });
 
-  it('finds a recipe', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
-    const component = helpers.createComponent(test);
-    const recipePath = cp.findRecipe(component.id);
-    expect(recipePath).to.be.eql(path.join(test.componentDir, component.id));
-    expect(cp.findRecipe('no-exists')).to.be.eql(null);
-  });
   it('parses a component reference', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
