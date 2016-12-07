@@ -1,6 +1,7 @@
 'use strict';
 
 const ComponentProvider = require('../lib/build-manager/component-provider');
+const Recipe = require('../lib/build-manager/component-provider/recipe');
 const path = require('path');
 const _ = require('lodash');
 const helpers = require('blacksmith-test');
@@ -218,5 +219,79 @@ describe('Component Provider', () => {
     expect(cp.getComponent(component.id, {
       platform: 'linux-x64'
     }).constructor.name, 'Bad class resolution').to.be.eql('sample2');
+  });
+
+  describe('Recipe', function() {
+    before('prepare environment', () => {
+      helpers.cleanTestEnv();
+    });
+    afterEach('clean environment', () => {
+      helpers.cleanTestEnv();
+    });
+    it('instantiates a Recipe without errors', function() {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const component = helpers.createComponent(test);
+      const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'));
+      const expectedRecipe = {
+        _searchPath: [test.componentDir],
+        metadata: {
+          id: component.id,
+          licenses: [{main: true, type: component.licenseType, licenseRelativePath: component.licenseRelativePath}],
+          version: component.version
+        },
+        _componentTypeCollections: config.get('componentTypeCollections'),
+      };
+      _.each(expectedRecipe, (v, k) => {
+        expect(recipe[k]).to.be.eql(v);
+      });
+      expect(recipe.componentClass).to.be.a('Function');
+    });
+    it('validates a Recipe metadata', function() {
+      expect(() => {
+        Recipe.validateMetadata({id: 'test', version: 'test', licenses: 'test'});
+      }).to.not.throw('Error validating');
+    });
+    it('throws an error with wrong metadata', function() {
+      const fields = ['id', 'version', 'licenses'];
+      _.each(fields, field => {
+        const metadata = {id: 'test', version: 'test', licenses: 'test'};
+        metadata[field] = '';
+        expect(() => {
+          Recipe.validateMetadata(metadata);
+        }).to.throw(`Error validating the component metadata: The field ${field} is empty`);
+      });
+    });
+    it('loads a different Recipe without errors', function() {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const component = helpers.createComponent(test);
+      const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'));
+      const component2 = helpers.createComponent(test, {id: 'component2'});
+      const recipe2 = recipe.loadBuildInstructions(component2.id, [test.componentDir]);
+      expect(recipe2).to.be.a('Function');
+    });
+    it('exposes global functionalities for build instructions', function() {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const component = helpers.createComponent(test);
+      const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'));
+      const component2 = helpers.createComponent(test, {id: 'component2'});
+      fs.writeFileSync(path.join(test.componentDir, `${component2.id}/index.js`), `
+      'use strict';
+      const PreviousComponent = $loadBuildInstructions('${component.id}')
+      class Test extends PreviousComponent{
+        initialize() {
+          const modulesToLoad = [_, path, $bu, $os, $file, $util];
+          modulesToLoad.forEach(mod => {
+            if (typeof mod === 'undefined') throw new Error('Failed to load module');
+          });
+        }
+      }
+      module.exports = Test;`);
+      const Test = recipe.loadBuildInstructions(component2.id, [test.componentDir]);
+      const componentInstance = new Test();
+      expect(componentInstance.initialize).to.not.throw();
+    });
   });
 });
