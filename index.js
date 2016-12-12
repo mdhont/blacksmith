@@ -120,31 +120,36 @@ function getDummyLogger(log) {
   return logger;
 }
 
-function addComponentToMetadataServer(server, component) {
-  const jsonResponse = {
-    'version': {
-      'name': component.version,
-      'key': component.id,
-      'latest': component.version,
-      'licenses': [
-        {
-          'main': true,
-          'relative_license_path': component.licenseRelativePath,
-          'name': component.licenseType
-        }
-      ],
-      'vulnerabilities': []
-    }
-  };
+function addComponentToMetadataServer(server, component, response) {
+  const jsonResponse = _.defaults({}, response, {
+    'name': component.version,
+    'key': component.id,
+    'latest': component.version,
+    'licenses': [
+      {
+        'main': true,
+        'license_relative_path': component.licenseRelativePath,
+        'name': component.licenseType
+      }
+    ],
+    'vulnerabilities': []
+  });
   nock(server).persist()
       .get('')
       .reply(200, JSON.stringify({'status': 'ok', 'version': 'v1'}));
   nock(server).persist()
       .get(`/components/${component.id}/latest`)
       .reply(200, JSON.stringify(jsonResponse));
-  const majorVersion = component.version.match(/^([0-9]+)\.?/)[1];
+  const majorVersion = component.version.split('.')[0];
+  const minorVersion = component.version.split('.')[1];
   nock(server).persist()
       .get(`/components/${component.id}/~%3E${majorVersion}`)
+      .reply(200, JSON.stringify(jsonResponse));
+  nock(server).persist()
+      .get(`/components/${component.id}/~%3E${majorVersion}.${minorVersion}`)
+      .reply(200, JSON.stringify(jsonResponse));
+  nock(server).persist()
+      .get(`/components/${component.id}/~%3E${majorVersion}.${minorVersion}.0`)
       .reply(200, JSON.stringify(jsonResponse));
   nock(server).persist()
       .get(`/components/${component.id}/versions/${component.version}`)
