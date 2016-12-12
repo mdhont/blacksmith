@@ -234,7 +234,7 @@ describe('Component Provider', () => {
       const component = helpers.createComponent(test);
       const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'));
       const expectedRecipe = {
-        _searchPath: [test.componentDir],
+        _recipeDirectories: [test.componentDir],
         metadata: {
           id: component.id,
           licenses: [{main: true, type: component.licenseType, licenseRelativePath: component.licenseRelativePath}],
@@ -243,8 +243,23 @@ describe('Component Provider', () => {
         _componentTypeCollections: config.get('componentTypeCollections'),
       };
       _.each(expectedRecipe, (v, k) => {
-        expect(recipe[k]).to.be.eql(v);
+        expect(recipe[k]).to.be.eql(v, `Unmatched ${k}`);
       });
+      expect(recipe.componentClass).to.be.a('Function');
+      const recipeText = fs.readFileSync(path.join(test.componentDir, `${component.id}/index.js`), {encoding: 'utf8'});
+      const classText = recipeText.match(/(class.*)/)[1];
+      expect(recipe.componentClass.toString()).to.be.eql(classText);
+    });
+    it('finds a Recipe inside a \'compilation\' folder', function() {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const component = helpers.createComponent(test);
+      const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'));
+      fs.mkdirSync(path.join(test.componentDir, `${component.id}/compilation`));
+      fs.renameSync(
+        path.join(test.componentDir, `${component.id}/index.js`),
+        path.join(test.componentDir, `${component.id}/compilation/index.js`)
+      );
       expect(recipe.componentClass).to.be.a('Function');
     });
     it('validates a Recipe metadata', function() {
