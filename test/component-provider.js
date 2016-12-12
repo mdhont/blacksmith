@@ -9,6 +9,10 @@ const chai = require('chai');
 const expect = chai.expect;
 const DummyConfigHandler = helpers.DummyConfigHandler;
 const fs = require('fs');
+let AnvilClient = null;
+try {
+  AnvilClient = require('anvil-client'); // eslint-disable-line import/no-unresolved
+} catch (e) { /* Anvil client is not available */ }
 
 describe('Component Provider', () => {
   const metadataServerTestingEndpoint = 'https://test-metadata-server.net/api/v1';
@@ -66,89 +70,36 @@ describe('Component Provider', () => {
     expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
 
-  xit('obtains a recipe using a metadata server', () => {
-    const test = helpers.createTestEnv();
-    const component = helpers.createComponent(test, {
-      id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+  if (AnvilClient) {
+    it('instantiates a client for the metadata server', function() {
+      const test = helpers.createTestEnv();
+      const component = helpers.createComponent(test, {
+        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+      });
+      helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+        metadataServer: {
+          activate: true,
+          prioritize: true,
+          endPoint: metadataServerTestingEndpoint
+        }
+      });
+      expect(cp.metadataServer.client).to.be.a('Object');
     });
-    helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-      metadataServer: {
-        activate: true,
-        prioritize: true,
-        endPoint: metadataServerTestingEndpoint
-      }
+    it('deactivates the metadata server', () => {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+        metadataServer: {
+          activate: false,
+          prioritize: true,
+          endPoint: metadataServerTestingEndpoint
+        }
+      });
+      expect(cp.metadataServer).to.be.eql(null);
     });
-    const recipe = cp.getRecipe(component.id);
-    const desiredRecipe = {
-      'metadata': {
-        'id': component.id,
-        'version': component.version,
-        'licenses': [{'type': 'BSD3', 'licenseRelativePath': 'LICENSE', 'main': true}],
-      },
-      '_componentTypeCollections': config.get('componentTypeCollections')
-    };
-    _.each(desiredRecipe, (v, k) => expect(recipe[k]).to.be.eql(v));
-    helpers.addNotFoundEntries(
-      metadataServerTestingEndpoint,
-      ['/components/sample/~2', '/components/no-exists/latest']
-    );
-    // Test missing version
-    expect(() => cp.getRecipe(component.id, {version: '~2'})).to.throw('404');
-    // Test missing component
-    expect(() => cp.getRecipe('no-exists')).to.throw('404');
-  });
-
-  xit('prioritizes the source of metadata', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-      metadataServer: {
-        activate: true,
-        prioritize: false,
-        endPoint: metadataServerTestingEndpoint
-      }
-    });
-    const component = helpers.createComponent(test, {
-      id: 'sample', version: '2.0.0', licenseType: 'local', licenseRelativePath: 'local'
-    });
-    const recipe = cp.getRecipe(component.id);
-    const desiredRecipe = {
-      'metadata': {
-        'id': component.id,
-        'version': component.version,
-        'licenses': [{'type': 'local', 'licenseRelativePath': 'local', 'main': true}],
-      },
-      '_componentTypeCollections': config.get('componentTypeCollections')
-    };
-    _.each(desiredRecipe, (v, k) => expect(recipe[k]).to.be.eql(v));
-  });
-
-  it('deactivates the metadata server', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-      metadataServer: {
-        activate: false,
-        prioritize: true,
-        endPoint: metadataServerTestingEndpoint
-      }
-    });
-    const component = helpers.createComponent(test, {
-      id: 'sample', version: '2.0.0', licenseType: 'local', licenseRelativePath: 'local'
-    });
-    const recipe = cp.getRecipe(component.id);
-    const desiredRecipe = {
-      'metadata': {
-        'id': component.id,
-        'version': component.version,
-        'licenses': [{'type': 'local', 'licenseRelativePath': 'local', 'main': true}],
-      },
-      '_componentTypeCollections': config.get('componentTypeCollections')
-    };
-    _.each(desiredRecipe, (v, k) => expect(recipe[k]).to.be.eql(v));
-  });
+  }
 
   it('parses a component reference', () => {
     const test = helpers.createTestEnv();
@@ -308,5 +259,80 @@ describe('Component Provider', () => {
       const componentInstance = new Test();
       expect(componentInstance.initialize).to.not.throw();
     });
+    if (AnvilClient) {
+      it('obtains a recipe using a metadata server', () => {
+        const test = helpers.createTestEnv();
+        const component = helpers.createComponent(test, {
+          id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+        });
+        helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+        const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+        const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'), {
+          metadataServer: {
+            client: new AnvilClient(metadataServerTestingEndpoint),
+            prioritize: true
+          }
+        });
+        const desiredMetadata = {
+          'id': component.id,
+          'version': component.version,
+          'licenses': [{'type': 'BSD3', 'licenseRelativePath': 'LICENSE', 'main': true}],
+        };
+        expect(recipe.metadata).to.be.eql(desiredMetadata);
+      });
+      it('throws a not found error if the component metadata doesn\'t exists in the metadata server', function() {
+        const test = helpers.createTestEnv();
+        const component = helpers.createComponent(test, {
+          id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+        });
+        const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+        helpers.addNotFoundEntries(
+          metadataServerTestingEndpoint,
+          ['/components/sample/~2.0.0', '/components/no-exists/latest']
+        );
+        // Test missing version
+        expect(() => {
+          new Recipe(  // eslint-disable-line no-new
+            component.id,
+            [test.componentDir],
+            config.get('componentTypeCollections'),
+            {
+              metadataServer: {client: new AnvilClient(metadataServerTestingEndpoint), prioritize: true},
+              requirements: {version: '~2.0.0'}
+            }
+          );
+        }).to.throw('404');
+        // Test missing component
+        expect(() => {
+          new Recipe(  // eslint-disable-line no-new
+            'no-exists',
+            [test.componentDir],
+            config.get('componentTypeCollections'),
+            {
+              metadataServer: {client: new AnvilClient(metadataServerTestingEndpoint), prioritize: true}
+            }
+          );
+        }).to.throw('404');
+      });
+      it('lowers the priority of the metadata server', () => {
+        const test = helpers.createTestEnv();
+        const desiredVersion = '2.0.0';
+        const component = helpers.createComponent(test, {
+          id: 'sample', version: desiredVersion, licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+        });
+        helpers.addComponentToMetadataServer(
+          metadataServerTestingEndpoint,
+          _.assign({}, component, {version: '1.0.0'})
+        );
+        const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+        const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'), {
+          metadataServer: {
+            client: new AnvilClient(metadataServerTestingEndpoint),
+            prioritize: false
+          }
+        });
+        expect(recipe.metadata.version).to.be.eql(desiredVersion);
+      });
+    }
   });
 });
