@@ -265,6 +265,7 @@ describe('Component Provider', () => {
         const component = helpers.createComponent(test, {
           id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
         });
+        fs.unlinkSync(path.join(test.componentDir, `${component.id}/metadata.json`));
         helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
         const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
         const recipe = new Recipe(component.id, [test.componentDir], config.get('componentTypeCollections'), {
@@ -280,17 +281,29 @@ describe('Component Provider', () => {
         };
         expect(recipe.metadata).to.be.eql(desiredMetadata);
       });
-      it('throws a not found error if the component metadata doesn\'t exists in the metadata server', function() {
+      it('throws a not found error if the component doesn\'t exists in the metadata server', function() {
         const test = helpers.createTestEnv();
-        const component = helpers.createComponent(test, {
-          id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-        });
         const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-        helpers.addNotFoundEntries(
-          metadataServerTestingEndpoint,
-          ['/components/sample/~2.0.0', '/components/no-exists/latest']
-        );
-        // Test missing version
+        helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/no-exists/latest']);
+        expect(() => {
+          new Recipe(  // eslint-disable-line no-new
+            'no-exists',
+            [test.componentDir],
+            config.get('componentTypeCollections'),
+            {
+              metadataServer: {client: new AnvilClient(metadataServerTestingEndpoint), prioritize: true}
+            }
+          );
+        }).to.throw('404');
+      });
+      it('throws an error if the component version required doesn\'t exists in the metadata server', function() {
+        const test = helpers.createTestEnv();
+        const component = {
+          id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+        };
+        helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+        const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+        helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/sample/~2.0.0']);
         expect(() => {
           new Recipe(  // eslint-disable-line no-new
             component.id,
@@ -299,17 +312,6 @@ describe('Component Provider', () => {
             {
               metadataServer: {client: new AnvilClient(metadataServerTestingEndpoint), prioritize: true},
               requirements: {version: '~2.0.0'}
-            }
-          );
-        }).to.throw('404');
-        // Test missing component
-        expect(() => {
-          new Recipe(  // eslint-disable-line no-new
-            'no-exists',
-            [test.componentDir],
-            config.get('componentTypeCollections'),
-            {
-              metadataServer: {client: new AnvilClient(metadataServerTestingEndpoint), prioritize: true}
             }
           );
         }).to.throw('404');
