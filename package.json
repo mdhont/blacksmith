@@ -1,6 +1,6 @@
 {
   "name": "blacksmith",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Bitnami Blacksmith System",
   "main": "index.js",
   "engines": {
@@ -13,7 +13,7 @@
     "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.6",
     "nami-utils": "^0.1.0",
     "cmd-parser": "^0.0.1",
-    "blacksmith-core": "bitnami/blacksmith-core#v0.0.24",
+    "blacksmith-core": "bitnami/blacksmith-core#v0.0.25",
     "common-utils": "bitnami/node-common-utils#v2.0.2",
     "version-utils": "bitnami/node-version-utils#v2.0.0"
   },
