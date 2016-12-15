@@ -53,7 +53,8 @@ function createComponent(test, options) {
     id: 'sample1',
     version: '1.0.0',
     licenseType: 'BSD3',
-    licenseRelativePath: 'LICENSE'
+    licenseRelativePath: 'LICENSE',
+    licenseUrl: 'http://license.org'
   });
   const componentId = options.id;
   const componentVersion = options.version;
@@ -72,6 +73,7 @@ function createComponent(test, options) {
         {
           'type': options.licenseType,
           'licenseRelativePath': options.licenseRelativePath,
+          'url': options.licenseUrl,
           'main': true
         }
       ]
@@ -98,6 +100,7 @@ function createComponent(test, options) {
     sourceTarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
     licenseRelativePath: options.licenseRelativePath,
     licenseType: options.licenseType,
+    licenseUrl: options.licenseUrl,
     buildSpec,
     buildSpecFile
   };
@@ -129,6 +132,7 @@ function addComponentToMetadataServer(server, component, response) {
       {
         'main': true,
         'license_relative_path': component.licenseRelativePath,
+        'url': component.licenseUrl,
         'name': component.licenseType
       }
     ],
