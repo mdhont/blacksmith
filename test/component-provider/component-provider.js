@@ -60,36 +60,42 @@ describe('Component Provider', () => {
     expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
 
-  if (AnvilClient) {
-    it('instantiates a client for the metadata server', function() {
-      const test = helpers.createTestEnv();
-      const component = helpers.createComponent(test, {
-        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-      });
-      helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
-      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-        metadataServer: {
-          activate: true,
-          prioritize: true,
-          endPoint: metadataServerTestingEndpoint
-        }
-      });
-      expect(cp.metadataServer.client).to.be.a('Object');
+  describe('using a metadata server', function() {
+    before(function() {
+      if (!AnvilClient) {
+        this.skip();
+      } else {
+        it('instantiates a client for the metadata server', function() {
+          const test = helpers.createTestEnv();
+          const component = helpers.createComponent(test, {
+            id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+          });
+          helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+          const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+          const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+            metadataServer: {
+              activate: true,
+              prioritize: true,
+              endPoint: metadataServerTestingEndpoint
+            }
+          });
+          expect(cp.metadataServer.client).to.be.a('Object');
+        });
+        it('deactivates the metadata server', () => {
+          const test = helpers.createTestEnv();
+          const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+          const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+            metadataServer: {
+              activate: false,
+              prioritize: true,
+              endPoint: metadataServerTestingEndpoint
+            }
+          });
+          expect(cp.metadataServer).to.be.eql(null);
+        });
+      }
     });
-    it('deactivates the metadata server', () => {
-      const test = helpers.createTestEnv();
-      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-        metadataServer: {
-          activate: false,
-          prioritize: true,
-          endPoint: metadataServerTestingEndpoint
-        }
-      });
-      expect(cp.metadataServer).to.be.eql(null);
-    });
-  }
+  });
 
   it('parses a component reference', () => {
     const test = helpers.createTestEnv();
@@ -134,7 +140,18 @@ describe('Component Provider', () => {
     _.each(desiredComponent, (v, k) => {
       expect(componentObj[k]).to.be.eql(v);
     });
+  });
+  it('throws an error if no version satisfying the requirements is found', () => {
+    const test = helpers.createTestEnv();
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const component = helpers.createComponent(test);
     expect(() => cp.getComponent(component.id, {version: '~2'})).to.throw('Not found any version satisfying ~2');
+  });
+  it('throws an error if no component is found', () => {
+    const test = helpers.createTestEnv();
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
     expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
   it('obtains a component class based on requirements', () => {

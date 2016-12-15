@@ -19,8 +19,10 @@ describe('RecipeLogicProvider', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
+
     const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.getRecipeClass(component.id);
+
     expect(buildInstructions).to.be.a('Function');
     const recipeText = fs.readFileSync(path.join(test.componentDir, `${component.id}/index.js`), {encoding: 'utf8'});
     const classText = recipeText.match(/(class.*)/)[1];
@@ -30,9 +32,11 @@ describe('RecipeLogicProvider', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
+
     const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const recipeDir = recipeLogicProvider.findRecipeFolder(component.id);
     const buildInstructions = recipeLogicProvider.getRecipeClass(component.id, recipeDir);
+
     const recipeText = fs.readFileSync(path.join(test.componentDir, `${component.id}/index.js`), {encoding: 'utf8'});
     const classText = recipeText.match(/(class.*)/)[1];
     expect(buildInstructions.toString()).to.be.eql(classText);
@@ -41,6 +45,7 @@ describe('RecipeLogicProvider', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
+
     const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const recipeDir = recipeLogicProvider.findRecipeFolder(component.id);
     fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
@@ -52,14 +57,16 @@ describe('RecipeLogicProvider', function() {
       {class: Test2, version: '~2'}
     ];`);
     const buildInstructions1 = recipeLogicProvider.getRecipeClass(component.id, recipeDir, {version: '1.1.0'});
-    expect(buildInstructions1.toString()).to.contain('class Test1');
     const buildInstructions2 = recipeLogicProvider.getRecipeClass(component.id, recipeDir, {version: '2.2.0'});
+
+    expect(buildInstructions1.toString()).to.contain('class Test1');
     expect(buildInstructions2.toString()).to.contain('class Test2');
   });
   it('obtains a recipe class without errors using a Factory', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
+
     const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const recipeDir = recipeLogicProvider.findRecipeFolder(component.id);
     fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
@@ -75,8 +82,9 @@ describe('RecipeLogicProvider', function() {
     }
     module.exports = factory;`);
     const buildInstructions1 = recipeLogicProvider.getRecipeClass(component.id, recipeDir, {test: '1'});
-    expect(buildInstructions1.toString()).to.contain('class Test1');
     const buildInstructions2 = recipeLogicProvider.getRecipeClass(component.id, recipeDir, {test: '2'});
+
+    expect(buildInstructions1.toString()).to.contain('class Test1');
     expect(buildInstructions2.toString()).to.contain('class Test2');
   });
 
@@ -90,8 +98,10 @@ describe('RecipeLogicProvider', function() {
       path.join(test.componentDir, `${component.id}/index.js`),
       path.join(test.componentDir, `${component.id}/compilation/index.js`)
     );
+
     const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.getRecipeClass(component.id);
+
     expect(buildInstructions).to.be.a('Function');
     const classText = recipeText.match(/(class.*)/)[1];
     expect(buildInstructions.toString()).to.be.eql(classText);
@@ -99,26 +109,31 @@ describe('RecipeLogicProvider', function() {
   it('loads the build instructions of a recipe', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const component = helpers.createComponent(test);
+
+    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.loadBuildInstructions(component.id);
+
     expect(buildInstructions).to.be.a('Function');
   });
   it('loads the build instructions of a recipe using a directory', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const component = helpers.createComponent(test);
+
+    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const recipeDir = recipeLogicProvider.findRecipeFolder(component.id);
     const buildInstructions = recipeLogicProvider.loadBuildInstructions(component.id, recipeDir);
+
     expect(buildInstructions).to.be.a('Function');
   });
   it('exposes global functionalities for build instructions', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     const component2 = helpers.createComponent(test, {id: 'component2'});
+
+    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
     fs.writeFileSync(path.join(test.componentDir, `${component2.id}/index.js`), `
     'use strict';
     const PreviousComponent = $loadBuildInstructions('${component.id}')
@@ -133,6 +148,7 @@ describe('RecipeLogicProvider', function() {
     module.exports = Test;`);
     const Test = recipeLogicProvider.getRecipeClass(component2.id);
     const componentInstance = new Test();
+
     expect(componentInstance.initialize).to.not.throw();
   });
 });
