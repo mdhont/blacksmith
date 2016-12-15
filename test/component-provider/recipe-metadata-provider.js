@@ -5,7 +5,6 @@ const _ = require('lodash');
 const helpers = require('blacksmith-test');
 const chai = require('chai');
 const expect = chai.expect;
-const fs = require('fs');
 let AnvilClient = null;
 try {
   AnvilClient = require('anvil-client'); // eslint-disable-line import/no-unresolved
@@ -57,81 +56,76 @@ describe('RecipeMetadataProvider', function() {
     before(function() {
       if (!AnvilClient) {
         this.skip();
-      } else {
-        it('obtains a recipe using a metadata server', () => {
-          const test = helpers.createTestEnv();
-          const component = helpers.createComponent(test, {
-            id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-          });
-          fs.unlinkSync(path.join(test.componentDir, `${component.id}/metadata.json`));
-          helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
-
-          const recipeMetadataProvider = new RecipeMetadataProvider([test.componentDir], {
-            client: new AnvilClient(metadataServerTestingEndpoint),
-            prioritize: true
-          });
-          const metadata = recipeMetadataProvider.getMetadata(component.id);
-
-          const desiredMetadata = {
-            'id': component.id,
-            'version': component.version,
-            'licenses': [{
-              'type': 'BSD3', 'licenseUrl': component.licenseUrl, 'licenseRelativePath': 'LICENSE', 'main': true
-            }],
-          };
-          expect(metadata).to.be.eql(desiredMetadata);
-        });
-        it('throws a not found error if the component doesn\'t exists in the metadata server', function() {
-          const test = helpers.createTestEnv();
-          helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/no-exists/latest']);
-
-          const recipeMetadataProvider = new RecipeMetadataProvider([test.componentDir], {
-            client: new AnvilClient(metadataServerTestingEndpoint),
-            prioritize: true
-          });
-
-          expect(() => {
-            recipeMetadataProvider.getMetadata('no-exists');
-          }).to.throw('Not found any metadata for no-exists');
-        });
-        it('throws an error if the component version required doesn\'t exists in the metadata server', function() {
-          const test = helpers.createTestEnv();
-          const component = {
-            id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-          };
-          helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
-          helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/sample/~2.0.0']);
-          const recipeMetadataProvider = new RecipeMetadataProvider([test.componentDir], {
-            client: new AnvilClient(metadataServerTestingEndpoint),
-            prioritize: true
-          });
-
-          expect(() => {
-            recipeMetadataProvider.getMetadata(component.id, {requirements: {version: '~2.0.0'}});
-          }).to.throw('Not found any metadata for sample satisfying: {"version":"~2.0.0"}');
-        });
-        it('lowers the priority of the metadata server', () => {
-          const test = helpers.createTestEnv();
-          const desiredVersion = '2.0.0';
-          const component = helpers.createComponent(test, {
-            id: 'sample', version: desiredVersion, licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-          });
-          helpers.addComponentToMetadataServer(
-            metadataServerTestingEndpoint,
-            _.assign({}, component, {version: '1.0.0'})
-          );
-
-          const recipeMetadataProvider = new RecipeMetadataProvider([test.componentDir], {
-            client: new AnvilClient(metadataServerTestingEndpoint),
-            prioritize: false
-          });
-          const metadata = recipeMetadataProvider.getMetadata(component.id, {
-            recipeDir: path.join(test.componentDir, component.id)
-          });
-
-          expect(metadata.version).to.be.eql(desiredVersion);
-        });
       }
+    });
+    it('obtains a recipe using a metadata server', () => {
+      const component = {
+        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+      };
+      helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+
+      const recipeMetadataProvider = new RecipeMetadataProvider({
+        client: new AnvilClient(metadataServerTestingEndpoint),
+        prioritize: true
+      });
+      const metadata = recipeMetadataProvider.getMetadata(component.id);
+
+      const desiredMetadata = {
+        'id': component.id,
+        'version': component.version,
+        'licenses': [{
+          'type': 'BSD3', 'licenseUrl': component.licenseUrl, 'licenseRelativePath': 'LICENSE', 'main': true
+        }],
+      };
+      expect(metadata).to.be.eql(desiredMetadata);
+    });
+    it('throws a not found error if the component doesn\'t exists in the metadata server', function() {
+      helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/no-exists/latest']);
+
+      const recipeMetadataProvider = new RecipeMetadataProvider({
+        client: new AnvilClient(metadataServerTestingEndpoint),
+        prioritize: true
+      });
+
+      expect(() => {
+        recipeMetadataProvider.getMetadata('no-exists');
+      }).to.throw('Not found any metadata for no-exists');
+    });
+    it('throws an error if the component version required doesn\'t exists in the metadata server', function() {
+      const component = {
+        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+      };
+      helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+      helpers.addNotFoundEntries(metadataServerTestingEndpoint, ['/components/sample/~2.0.0']);
+      const recipeMetadataProvider = new RecipeMetadataProvider({
+        client: new AnvilClient(metadataServerTestingEndpoint),
+        prioritize: true
+      });
+
+      expect(() => {
+        recipeMetadataProvider.getMetadata(component.id, {requirements: {version: '~2.0.0'}});
+      }).to.throw('Not found any metadata for sample satisfying: {"version":"~2.0.0"}');
+    });
+    it('lowers the priority of the metadata server', () => {
+      const test = helpers.createTestEnv();
+      const desiredVersion = '2.0.0';
+      const component = helpers.createComponent(test, {
+        id: 'sample', version: desiredVersion, licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+      });
+      helpers.addComponentToMetadataServer(
+        metadataServerTestingEndpoint,
+        _.assign({}, component, {version: '1.0.0'})
+      );
+
+      const recipeMetadataProvider = new RecipeMetadataProvider({
+        client: new AnvilClient(metadataServerTestingEndpoint),
+        prioritize: false
+      });
+      const metadata = recipeMetadataProvider.getMetadata(component.id, {
+        recipeDir: path.join(test.componentDir, component.id)
+      });
+
+      expect(metadata.version).to.be.eql(desiredVersion);
     });
   });
 });

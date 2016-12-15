@@ -36,64 +36,40 @@ describe('Component Provider', () => {
     expect(cp.metadataProvider).to.be.a('Object');
     expect(cp.logicProvider).to.be.a('Object');
   });
-  it('obtains a recipe using a file', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
-    const component = helpers.createComponent(test);
-    const recipe = cp.getRecipe(component.id);
-    const desiredMetadata = {
-      'id': component.id,
-      'version': component.version,
-      'licenses': [
-        {
-          'type': 'BSD3',
-          'licenseRelativePath': 'LICENSE',
-          'url': 'http://license.org',
-          'main': true
-        }
-      ],
-    };
-    expect(recipe.metadata).to.be.eql(desiredMetadata);
-    expect(recipe.componentClass).to.be.a('Function');
-    expect(() => cp.getRecipe(component.id, {version: '~2'})).to.throw('Not found any version satisfying ~2');
-    expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
-  });
 
   describe('using a metadata server', function() {
     before(function() {
       if (!AnvilClient) {
         this.skip();
-      } else {
-        it('instantiates a client for the metadata server', function() {
-          const test = helpers.createTestEnv();
-          const component = helpers.createComponent(test, {
-            id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
-          });
-          helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
-          const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-          const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-            metadataServer: {
-              activate: true,
-              prioritize: true,
-              endPoint: metadataServerTestingEndpoint
-            }
-          });
-          expect(cp.metadataServer.client).to.be.a('Object');
-        });
-        it('deactivates the metadata server', () => {
-          const test = helpers.createTestEnv();
-          const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-          const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-            metadataServer: {
-              activate: false,
-              prioritize: true,
-              endPoint: metadataServerTestingEndpoint
-            }
-          });
-          expect(cp.metadataServer).to.be.eql(null);
-        });
       }
+    });
+    it('instantiates a client for the metadata server', function() {
+      const test = helpers.createTestEnv();
+      const component = helpers.createComponent(test, {
+        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+      });
+      helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+        metadataServer: {
+          activate: true,
+          prioritize: true,
+          endPoint: metadataServerTestingEndpoint
+        }
+      });
+      expect(cp.metadataServer.client).to.be.a('Object');
+    });
+    it('deactivates the metadata server', () => {
+      const test = helpers.createTestEnv();
+      const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+      const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
+        metadataServer: {
+          activate: false,
+          prioritize: true,
+          endPoint: metadataServerTestingEndpoint
+        }
+      });
+      expect(cp.metadataServer).to.be.eql(null);
     });
   });
 
@@ -152,7 +128,7 @@ describe('Component Provider', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
-    expect(() => cp.getRecipe('no-exists')).to.throw('Not found any source of metadata for no-exists');
+    expect(() => cp.getComponent('no-exists')).to.throw('Not found any source of metadata for no-exists');
   });
   it('obtains a component class based on requirements', () => {
     const test = helpers.createTestEnv();
