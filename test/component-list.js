@@ -34,6 +34,7 @@ describe('Component List', () => {
         'licenses': [
           {
             'licenseRelativePath': 'LICENSE',
+            'url': 'http://license.org',
             'main': true,
             'type': 'BSD3'
           }
