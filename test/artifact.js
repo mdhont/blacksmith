@@ -41,6 +41,6 @@ describe('Artifact', () => {
     };
     const artifact = new Artifact(inputObject);
     _.each(result, (v, k) => expect(artifact[k]).to.be.eql(v));
-    expect(artifact.builtOn.toString()).to.be.eql(new Date().toString());
+    expect(artifact.builtOn).to.be.an.instanceof(Date);
   });
 });
