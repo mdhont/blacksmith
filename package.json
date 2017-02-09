@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "nami-logger": "^0.0.1",
-    "nami-utils": "^0.1.0",
-    "tarball-utils": "bitnami/node-tarball-utils#v2.0.3",
+    "nami-utils": "^0.2.0",
+    "tarball-utils": "bitnami/node-tarball-utils#v3.0.0",
     "compilation-utils": "bitnami/node-compilation-utils#v1.0.3"
   },
   "devDependencies": {
