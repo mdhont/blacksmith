@@ -128,7 +128,9 @@ describe('Component Provider', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
-    expect(() => cp.getComponent('no-exists')).to.throw('Not found any source of metadata for no-exists');
+    expect(() => cp.getComponent('no-exists')).to.throw(
+      `Unable to find a recipe for no-exists in ${test.componentDir}`
+    );
   });
   it('obtains a component class based on requirements', () => {
     const test = helpers.createTestEnv();
