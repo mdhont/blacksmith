@@ -106,6 +106,19 @@ describe('RecipeLogicProvider', function() {
     const classText = recipeText.match(/(class.*)/)[1];
     expect(buildInstructions.toString()).to.be.eql(classText);
   });
+  it('throws an error if several recipes are found', function() {
+    const test = helpers.createTestEnv();
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const component = helpers.createComponent(test);
+    fs.mkdirSync(path.join(test.componentDir, 'extra-folder'));
+    fs.mkdirSync(path.join(test.componentDir, 'extra-folder', component.id));
+    fs.writeFileSync(path.join(test.componentDir, 'extra-folder', component.id, 'index.js'), 'test');
+
+    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    expect(() => recipeLogicProvider.findRecipeFolder(component.id)).to.throw(
+      `Found several possible recipe directories for ${component.id} in ${test.componentDir}`
+    );
+  });
   it('loads the build instructions of a recipe', function() {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
