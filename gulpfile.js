@@ -9,13 +9,14 @@ const nodeVersion = '6.9.4';
 /* CI tasks */
 
 const testFiles = [
+  './test/core/**/*js',
   './test/help.js',
   './test/configure.js',
   './test/inspect.js',
   './test/build.js',
   './test/containerized-build.js',
 ];
-const srcFiles = ['index.js', './cli/*.js', './config-handler/*.js'].concat(testFiles);
+const srcFiles = ['index.js', './cli/*.js', './config-handler/*.js', './lib/**/*.js'].concat(testFiles);
 const testArgs = {sources: srcFiles, tests: testFiles};
 
 commonTasks.test(testArgs);
@@ -34,6 +35,7 @@ commonTasks.bundle({
     './index.js',
     './cli/*.js',
     './config-handler/*.js',
+    './lib/**/*',
     './bin/**/*'
   ],
   runtime: {
@@ -47,7 +49,8 @@ commonTasks.npm({
   sources: [
     './index.js',
     './cli/*.js',
-    './config-handler/*.js'
+    './config-handler/*.js',
+    './lib/**/*'
   ],
   meta: [
     './bin/**/*',

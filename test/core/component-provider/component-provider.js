@@ -1,6 +1,6 @@
 'use strict';
 
-const ComponentProvider = require('../../lib/build-manager/component-provider');
+const ComponentProvider = require('../../../lib/core/build-manager/component-provider');
 const path = require('path');
 const _ = require('lodash');
 const helpers = require('blacksmith-test');

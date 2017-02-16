@@ -1,8 +1,8 @@
 'use strict';
 
-const ComponentList = require('../lib/build-manager/component-list');
-const ComponentProvider = require('../lib/build-manager/component-provider');
-const BuildEnvironment = require('../lib/build-manager/build-environment');
+const ComponentList = require('../../lib/core/build-manager/component-list');
+const ComponentProvider = require('../../lib/core/build-manager/component-provider');
+const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
 const path = require('path');
 const _ = require('lodash');
 const fs = require('fs');

@@ -1,5 +1,5 @@
 'use strict';
-const RecipeMetadataProvider = require('../../lib/build-manager/component-provider/recipe/metadata-provider');
+const RecipeMetadataProvider = require('../../../lib/core/build-manager/component-provider/recipe/metadata-provider');
 const path = require('path');
 const _ = require('lodash');
 const helpers = require('blacksmith-test');

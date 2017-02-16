@@ -1,6 +1,6 @@
 'use strict';
 
-const Blacksmith = require('../lib/blacksmith');
+const Blacksmith = require('../../lib/core');
 const fs = require('fs');
 const helpers = require('blacksmith-test');
 const DummyConfigHandler = helpers.DummyConfigHandler;

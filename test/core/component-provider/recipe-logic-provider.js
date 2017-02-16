@@ -1,6 +1,6 @@
 'use strict';
 
-const RecipeLogicProvider = require('../../lib/build-manager/component-provider/recipe/logic-provider');
+const RecipeLogicProvider = require('../../../lib/core/build-manager/component-provider/recipe/logic-provider');
 const path = require('path');
 const helpers = require('blacksmith-test');
 const chai = require('chai');

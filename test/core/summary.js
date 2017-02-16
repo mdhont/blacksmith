@@ -1,7 +1,7 @@
 'use strict';
 
-const Summary = require('../lib/build-manager/artifacts/summary');
-const BuildEnvironment = require('../lib/build-manager/build-environment');
+const Summary = require('../../lib/core/build-manager/artifacts/summary');
+const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
 const helpers = require('blacksmith-test');
 const path = require('path');
 const os = require('os');

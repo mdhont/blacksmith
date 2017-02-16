@@ -1,6 +1,6 @@
 'use strict';
 
-const BuildManager = require('../lib/build-manager');
+const BuildManager = require('../../lib/core/build-manager');
 const path = require('path');
 const _ = require('lodash');
 const fs = require('fs');

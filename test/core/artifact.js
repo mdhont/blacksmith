@@ -1,6 +1,6 @@
 'use strict';
 
-const Artifact = require('../lib/build-manager/artifacts/artifact');
+const Artifact = require('../../lib/core/build-manager/artifacts/artifact');
 const _ = require('lodash');
 const chai = require('chai');
 const expect = chai.expect;

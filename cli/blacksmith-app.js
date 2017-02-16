@@ -4,7 +4,7 @@ const _ = require('nami-utils/lodash-extra');
 const nfile = require('nami-utils').file;
 const ConfigurationHandler = require('../config-handler');
 const BlacksmithParser = require('./blacksmith-parser');
-const BlacksmithCore = require('blacksmith-core');
+const BlacksmithCore = require('../lib/core');
 
 /**
  * Class representing the Blacksmith Application client. It reads the default configuration and call

@@ -1,6 +1,6 @@
 'use strict';
 
-const FileSystemTracker = require('../lib/build-manager/artifacts/fstracker');
+const FileSystemTracker = require('../../lib/core/build-manager/artifacts/fstracker');
 const path = require('path');
 const fs = require('fs');
 const spawnSync = require('child_process').spawnSync;
