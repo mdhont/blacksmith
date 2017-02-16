@@ -58,9 +58,13 @@ describe('RecipeMetadataProvider', function() {
         this.skip();
       }
     });
-    it('obtains a recipe using a metadata server', () => {
+    it('obtains a recipe using a metadata server', function() {
       const component = {
-        id: 'sample', version: '1.0.0', licenseType: 'BSD3', licenseRelativePath: 'LICENSE'
+        id: 'sample',
+        version: '1.0.0',
+        licenseType: 'BSD3',
+        licenseRelativePath: 'LICENSE',
+        licenseUrl: 'http://license.org'
       };
       helpers.addComponentToMetadataServer(metadataServerTestingEndpoint, component);
 
