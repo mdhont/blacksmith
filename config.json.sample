@@ -7,7 +7,7 @@
     "output": "./output",
     "sandbox": "./sandbox"
   },
-  "componentTypeCollections": ["blacksmith-base-components", "blacksmith-extra-component-types"],
+  "componentTypeCollections": ["blacksmith-extra-component-types"],
   "metadataServer": {
     "activate": false,
     "prioritize": false,

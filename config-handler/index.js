@@ -41,7 +41,7 @@ class ConfigurationHandler {
         sandbox: null,
         logs: null
       },
-      componentTypesCollections: [],
+      componentTypeCollections: [],
       metadataServer: {
         activate: false,
         prioritize: false,

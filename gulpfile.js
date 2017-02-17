@@ -10,6 +10,7 @@ const nodeVersion = '6.9.4';
 
 const testFiles = [
   './test/core/**/*js',
+  './test/base-components/**/*js',
   './test/help.js',
   './test/configure.js',
   './test/inspect.js',
