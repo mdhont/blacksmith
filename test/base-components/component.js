@@ -1,7 +1,7 @@
 'use strict';
 /* eslint-disable no-unused-expressions */
 
-const Component = require('../component');
+const Component = require('../../lib/base-components/component');
 const helpers = require('blacksmith-test');
 const path = require('path');
 const fs = require('fs');

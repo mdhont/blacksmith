@@ -1,6 +1,6 @@
 'use strict';
 
-const CompiledComponent = require('../compiled-component');
+const CompiledComponent = require('../../lib/base-components/compiled-component');
 const path = require('path');
 const fs = require('fs');
 const chai = require('chai');

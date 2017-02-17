@@ -1,7 +1,7 @@
 'use strict';
 /* eslint-disable no-unused-expressions */
 
-const MakeComponent = require('../make-component');
+const MakeComponent = require('../../lib/base-components/make-component');
 const path = require('path');
 const fs = require('fs');
 const chai = require('chai');

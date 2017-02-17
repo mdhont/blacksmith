@@ -1,6 +1,6 @@
 'use strict';
 
-const Library = require('../library');
+const Library = require('../../lib/base-components/library');
 const path = require('path');
 const chai = require('chai');
 const expect = chai.expect;
