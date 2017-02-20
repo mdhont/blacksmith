@@ -29,6 +29,7 @@ class BlacksmithParser extends Parser {
   addCommand(cmdDefinition, cmdOptions, optionsFromCfg) {
     const cmd = super.addCommand(cmdDefinition, cmdOptions);
     this._addOptionsFromConfigHandler(cmd, optionsFromCfg);
+    return cmd;
   }
   // optContainer can be either a parser or a command
   _addOptionFromConfigHandler(optContainer, optData, configKeyPath) {
@@ -36,7 +37,10 @@ class BlacksmithParser extends Parser {
     optContainer.addOption(_.defaults(optData, {
       default: this.configHandler.get(configKeyPath),
       callback: function() {
+        console.log('SETTING ', configKeyPath, ' TO ', this.getValue());
+        console.log('ID WHEN SETTING: ', configHandler._data.date);
         configHandler.set(configKeyPath, this.getValue());
+        console.log('RESULT: ', configHandler.get(configKeyPath));
       }
     }));
   }
@@ -126,115 +130,28 @@ class BlacksmithParser extends Parser {
         console.log(packageInfo.version);
       }
     });
-    this.addCommand({
-      name: 'configure', minArgs: 1, maxArgs: 2, namedArgs: ['property', 'value'],
-      callback: function() {
-        if (parser.getOption('config').provided) {
-          throw new Error('You can only change the default configuration file. ' +
-          'The --config option is not allowed with this command');
-        }
-        const action = this.getOptionValue('action');
-        const configFile = nfile.join(parser.configHandler.get('paths.rootDir'), 'config.json');
-        if (!nfile.exists(configFile)) throw new Error(`Unable to find the default config file at ${configFile}`);
-        const config = JSON.parse(nfile.read(configFile));
-        const previousValue = _.get(config, this.arguments.property);
-        if (_.isReallyObject(previousValue)) {
-          const innerKeys = _.map(_.keys(previousValue), key => `${this.arguments.property}.${key}`);
-          throw new Error(`${this.arguments.property} is an Object, ` +
-            `you need to specify one of its properties: ${innerKeys.join(', ')}`);
-        } else {
-          if ((action === 'add' || action === 'set') && _.isEmpty(this.arguments.value)) {
-            throw new Error('You need to specify a value');
+    _.each([
+      './commands/configure',
+      './commands/inspect',
+      './commands/build',
+    ].concat(this.configHandler.get('plugins')),
+      commands => {
+        // Refresh cache if already loaded
+        delete require.cache[require.resolve(commands)];
+        const commandDefinitions = require(commands);
+        _.each(_.flatten([commandDefinitions]), command => {
+          if (_.isEmpty(command.name) || !_.isFunction(command.callback)) {
+            throw new Error('You should specify at least a name and a callback function');
           }
-          switch (action) {
-            case 'set':
-              if (_.isArray(previousValue)) {
-                _.set(config, this.arguments.property, [this.arguments.value]);
-              } else {
-                _.set(config, this.arguments.property, this.arguments.value);
-              }
-              break;
-            case 'add':
-              if (_.isArray(previousValue)) {
-                _.set(config, this.arguments.property,
-                  _.get(config, this.arguments.property).concat(this.arguments.value)
-                );
-              } else {
-                _.set(config, this.arguments.property, this.arguments.value);
-              }
-              break;
-            case 'unset':
-              config[this.arguments.property] = parser.configHandler.getDefaulValue(this.arguments.property) || null;
-              break;
-            default:
-              throw new Error(`Option: ${action} not supported`);
-          }
-          nfile.write(configFile, JSON.stringify(config, null, 2));
-        }
-      }
-    }, [
-      {
-        name: 'action', type: 'choice', validValues: ['set', 'unset', 'add'], default: 'add',
-        description: 'Set, unset or add a new value to the specified property'
-      }
-    ]);
-
-    this.addCommand({
-      name: 'inspect', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
-      callback: function() {
-        const opts = parser.parseOptions(this, {camelize: true});
-        const componentsToList = parser.parseRequestedComponents(this.providedArguments, opts.json);
-        const data = parser.blacksmith.bm.getComponentsMetadata(componentsToList, opts);
-        const jsonOutput = JSON.stringify(data, null, 4);
-        if (opts.outputFile) {
-          nfile.write(opts.outputFile, jsonOutput);
-        } else {
-          console.log(jsonOutput);
-        }
-      }
-    }, [
-      {name: 'output-file'},
-      {name: 'json', type: 'string', description: 'JSON file containing the specification of what to build'},
-    ]);
-
-    this.addCommand({
-      name: 'build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
-      callback: function() {
-        const opts = _.opts(parser.parseOptions(this, {camelize: true}), {abortOnError: true, forceRebuild: false,
-          containerRoot: null, incrementalTracking: false, continueAt: null, platform: null});
-        const buildData = parser.parseRequestedComponents(this.providedArguments, opts.json);
-        parser.blacksmith.build(buildData, opts);
-      }
-    }, [
-      {name: 'force-rebuild', type: 'boolean',
-      description: 'Force rebuilding of components'},
-      {name: 'json', type: 'string',
-      description: 'JSON file containing the specification of what to build'},
-      {name: 'continue-at', description: 'Continue at a certain component in the list of components to build'},
-      {name: 'incremental-tracking', type: 'boolean', default: false,
-      description: 'Create separate tarballs for each of the individual components built'},
-      {name: 'build-id', description: 'Build identifier used to name certain directories and tarballs. ' +
-      'It defaults to the lastest built component'},
-      {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'}
-    ], {
-      'compilation.maxJobs': {name: 'max-jobs', description: 'Max parallel jobs. Defaults to the number of cores+1'},
-      'compilation.prefix': {name: 'prefix', description: 'Compilation prefix'}
-    });
-    _.each(this.configHandler.get('plugins'), extraCommands => {
-      const commands = require(extraCommands);
-      _.each(_.flatten([commands]), command => {
-        if (_.isEmpty(command.name) || !_.isFunction(command.callback)) {
-          throw new Error('You should specify at least a name and a callback function');
-        }
-        this.addCommand({
-          name: command.name,
-          minArgs: command.minArgs || 0,
-          maxArgs: command.maxArgs || -1,
-          namedArgs: command.namedArgs || [],
-          callback: command.callback(this),
-        }, command.options, command.configurationBasedOptions || {});
+          const cmd = this.addCommand({
+            name: command.name,
+            minArgs: command.minArgs || 0,
+            maxArgs: command.maxArgs || -1,
+            namedArgs: command.namedArgs || [],
+          }, command.options, command.configurationBasedOptions || {});
+          cmd.callback = command.callback(parser).bind(cmd);
+        });
       });
-    });
   }
 }
 
