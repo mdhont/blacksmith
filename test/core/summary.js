@@ -2,7 +2,7 @@
 
 const Summary = require('../../lib/core/build-manager/artifacts/summary');
 const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
-const helpers = require('blacksmith-test');
+const helpers = require('../helpers');
 const path = require('path');
 const os = require('os');
 const _ = require('lodash');

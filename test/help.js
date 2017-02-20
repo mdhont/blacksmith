@@ -7,7 +7,7 @@ const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const fs = require('fs');
-const helpers = require('blacksmith-test');
+const helpers = require('./helpers');
 const BlacksmithHandler = helpers.Handler;
 const BlacksmithApp = require('../cli/blacksmith-app');
 chai.use(chaiSubset);
