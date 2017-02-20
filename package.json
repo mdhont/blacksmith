@@ -7,7 +7,6 @@
     "node": "~6"
   },
   "dependencies": {
-    "blacksmith-containerized-build-command": "bitnami/blacksmith-containerized-build#v0.0.22",
     "blacksmith-extra-component-types": "bitnami/blacksmith-extra-component-types#v0.0.7",
     "cmd-parser": "^0.0.1",
     "compilation-utils": "bitnami/node-compilation-utils#v1.0.3",
