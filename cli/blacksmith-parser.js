@@ -37,10 +37,7 @@ class BlacksmithParser extends Parser {
     optContainer.addOption(_.defaults(optData, {
       default: this.configHandler.get(configKeyPath),
       callback: function() {
-        console.log('SETTING ', configKeyPath, ' TO ', this.getValue());
-        console.log('ID WHEN SETTING: ', configHandler._data.date);
         configHandler.set(configKeyPath, this.getValue());
-        console.log('RESULT: ', configHandler.get(configKeyPath));
       }
     }));
   }
