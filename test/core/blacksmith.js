@@ -2,7 +2,7 @@
 
 const Blacksmith = require('../../lib/core');
 const fs = require('fs');
-const helpers = require('blacksmith-test');
+const helpers = require('../helpers');
 const DummyConfigHandler = helpers.DummyConfigHandler;
 const chai = require('chai');
 const chaiFs = require('chai-fs');

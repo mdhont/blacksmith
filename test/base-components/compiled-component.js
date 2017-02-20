@@ -6,7 +6,7 @@ const fs = require('fs');
 const chai = require('chai');
 const chaiFs = require('chai-fs');
 chai.use(chaiFs);
-const helpers = require('blacksmith-test');
+const helpers = require('../helpers');
 const expect = chai.expect;
 
 describe('CompiledComponent', () => {

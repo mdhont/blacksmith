@@ -3,7 +3,7 @@
 const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
 const path = require('path');
 const _ = require('lodash');
-const helpers = require('blacksmith-test');
+const helpers = require('../helpers');
 const chai = require('chai');
 const expect = chai.expect;
 

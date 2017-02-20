@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const chai = require('chai');
 const expect = chai.expect;
-const helpers = require('blacksmith-test');
+const helpers = require('../helpers');
 const spawnSync = require('child_process').spawnSync;
 
 describe('MakeComponent', () => {
