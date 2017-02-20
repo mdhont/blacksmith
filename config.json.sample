@@ -13,9 +13,7 @@
     "prioritize": false,
     "endPoint": null
   },
-  "plugins": [
-      "blacksmith-containerized-build-command"
-  ],
+  "plugins": [],
   "containerizedBuild": {
     "images": [{
       "id": "gcr.io/bitnami-containers/bitnami-base-buildpack:r1",

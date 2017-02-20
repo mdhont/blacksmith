@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const helpers = require('blacksmith-test');
+const helpers = require('../../helpers');
 
 const getBlacksmithInstance = (config, log) => {
   return {

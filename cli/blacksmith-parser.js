@@ -131,6 +131,7 @@ class BlacksmithParser extends Parser {
       './commands/configure',
       './commands/inspect',
       './commands/build',
+      './commands/containerized-build',
     ].concat(this.configHandler.get('plugins')),
       commands => {
         // Refresh cache if already loaded

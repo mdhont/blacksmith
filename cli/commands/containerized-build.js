@@ -1,11 +1,11 @@
 'use strict';
 
 
-const ContainerizedBuilder = require('./lib/containerized-builder');
+const ContainerizedBuilder = require('../../lib/containerized-builder');
 const nfile = require('nami-utils').file;
 const _ = require('nami-utils/lodash-extra');
 const dockerUtils = require('docker-utils');
-const utilities = require('./lib/utilities');
+const utilities = require('../../lib/containerized-builder/utilities');
 
 module.exports = [{
   name: 'containerized-build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],

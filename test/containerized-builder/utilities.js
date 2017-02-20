@@ -1,7 +1,7 @@
 'use strict';
 
 const chai = require('chai');
-const utilities = require('../lib/utilities');
+const utilities = require('../../lib/containerized-builder/utilities');
 const expect = chai.expect;
 
 describe('Utilities', function() {

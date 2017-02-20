@@ -1,11 +1,11 @@
 'use strict';
 
-const helpers = require('blacksmith-test');
-const ContainerizedBuilder = require('../lib/containerized-builder');
+const helpers = require('../helpers');
+const ContainerizedBuilder = require('../../lib/containerized-builder');
 const chai = require('chai');
 const spawnSync = require('child_process').spawnSync;
 const spawn = require('child_process').spawn;
-const utilities = require('./lib/utilities');
+const bsmock = require('./helpers/blacksmith-mock');
 const fs = require('fs');
 const path = require('path');
 const expect = chai.expect;
@@ -19,7 +19,7 @@ describe('Containerized Builder', function() {
     helpers.cleanTestEnv();
   });
   it('creates an instance successfully', () => {
-    const cb = new ContainerizedBuilder(utilities.getBlacksmithInstance());
+    const cb = new ContainerizedBuilder(bsmock.getBlacksmithInstance());
     expect(cb.logger).to.not.be.empty; // eslint-disable-line no-unused-expressions
     expect(cb.config).to.not.be.empty; // eslint-disable-line no-unused-expressions
   });
@@ -28,14 +28,14 @@ describe('Containerized Builder', function() {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
-    const blacksmithTool = utilities.createDummyBlacksmith(test);
+    const blacksmithTool = bsmock.createDummyBlacksmith(test);
     const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
     config.paths.rootDir = blacksmithTool;
-    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
       [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      utilities.baseImage,
+      bsmock.baseImage,
       {
         buildDir: test.buildDir,
         exitOnEnd: false
@@ -48,15 +48,15 @@ describe('Containerized Builder', function() {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
-    const blacksmithTool = utilities.createDummyBlacksmith(test);
+    const blacksmithTool = bsmock.createDummyBlacksmith(test);
     const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
     config.metadataServer = {activate: true, prioritize: true, endPoint: 'test'};
     config.paths.rootDir = blacksmithTool;
-    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
       [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      utilities.baseImage,
+      bsmock.baseImage,
       {
         buildDir: test.buildDir,
         forceRebuild: false,
@@ -84,7 +84,7 @@ describe('Containerized Builder', function() {
       compilation: {prefix: test.prefix},
       metadataServer: config.metadataServer,
       containerizedBuild: {
-        images: [{id: utilities.baseImage}]
+        images: [{id: bsmock.baseImage}]
       }
     };
     expect(configRes).to.be.eql(desiredConf);
@@ -97,11 +97,11 @@ describe('Containerized Builder', function() {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
-    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     expect(() => cb.build(
       [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      utilities.baseImage,
+      bsmock.baseImage,
       {
         buildDir: test.buildDir,
         forceRebuild: true,
@@ -117,11 +117,11 @@ describe('Containerized Builder', function() {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
-    const blacksmithTool = utilities.createDummyBlacksmith(test);
+    const blacksmithTool = bsmock.createDummyBlacksmith(test);
     const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
     config.metadataServer = {activate: true, prioritize: true, endPoint: 'test'};
     config.paths.rootDir = blacksmithTool;
-    const blacksmithInstance = utilities.getBlacksmithInstance(config, log);
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     fs.writeFileSync(path.join(test.buildDir, 'test.patch'), 'PATCH');
     fs.writeFileSync(path.join(test.buildDir, 'test.extra'), 'EXTRA');
@@ -133,7 +133,7 @@ describe('Containerized Builder', function() {
         patches: [path.join(test.buildDir, 'test.patch')],
         extraFiles: [path.join(test.buildDir, 'test.extra')]
       }]
-    }, utilities.baseImage, {
+    }, bsmock.baseImage, {
       buildDir: test.buildDir,
       exitOnEnd: false
     });
@@ -153,7 +153,7 @@ describe('Containerized Builder', function() {
   it('opens a shell', () => {
     const previousENV = Object.assign({}, process.env);
     process.env.NO_TTY = 1;
-    spawn('node', [path.join(__dirname, './lib/shell.js')], { // Opens a spawn process with the shell
+    spawn('node', [path.join(__dirname, './helpers/shell.js')], { // Opens a spawn process with the shell
       stdio: [process.stdin, 'ignore', process.stderr]
     });
     process.env = previousENV;
