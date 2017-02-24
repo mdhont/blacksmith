@@ -29,6 +29,19 @@ function createTestEnv(conf) {
       'activate': false,
       'prioritize': false,
       'endPoint': null
+    },
+    'containerizedBuild': {
+      'images': [
+        {
+          'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r1',
+          'platform': {
+            'os': 'linux',
+            'arch': 'x64',
+            'distro': 'debian',
+            'version': '8'
+          }
+        }
+      ]
     }
   });
   const configFile = path.join(buildDir, 'config.json');

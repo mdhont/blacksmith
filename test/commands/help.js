@@ -7,9 +7,10 @@ const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
 const fs = require('fs');
-const helpers = require('./helpers');
+const path = require('path');
+const helpers = require('../helpers');
 const BlacksmithHandler = helpers.Handler;
-const BlacksmithApp = require('../cli/blacksmith-app');
+const BlacksmithApp = require('../../cli/blacksmith-app');
 chai.use(chaiSubset);
 chai.use(chaiFs);
 
@@ -28,7 +29,7 @@ describe('Blacksmith App', function() {
       const stdoutWrite = process.stdout.write;
       try {
         process.stdout.write = (string) => stdout += `${string}\n`;
-        new BlacksmithApp(test.configFile); // eslint-disable-line no-new
+        new BlacksmithApp(test.configFile, path.join(__dirname, '../../')); // eslint-disable-line no-new
         process.stdout.write = stdoutWrite;
       } catch (e) {
         process.stdout.write = stdoutWrite;
@@ -68,29 +69,35 @@ describe('Blacksmith App', function() {
         return mainHelpRe;
       }
       it('appears when called without arguments', function() {
-        const stdout = blacksmithHandler.exec('').stdout;
-        expect(stdout).to.match(getHelpRe());
+        const test = helpers.createTestEnv();
+        const result = blacksmithHandler.javascriptExec(test.configFile, '');
+        // const stdout = blacksmithHandler.exec('').stdout;
+        expect(result.stdout).to.match(getHelpRe());
       });
       it('appears when called with --help', function() {
-        const stdout = blacksmithHandler.exec('--help').stdout;
-        expect(stdout).to.match(getHelpRe());
+        const test = helpers.createTestEnv();
+        const result = blacksmithHandler.javascriptExec(test.configFile, '--help');
+        expect(result.stdout).to.match(getHelpRe());
       });
       it('appears when called with wrong commands, as well as an error message', function() {
-        const result = blacksmithHandler.exec('asdf', {abortOnError: false});
+        const test = helpers.createTestEnv();
+        const result = blacksmithHandler.javascriptExec(test.configFile, 'this-is-a-wrong-command');
         expect(result.stdout).to.match(getHelpRe());
-          // blacksmith ERROR Unknown command 'asdf'
-        expect(result.stderr).to.match(/Unknown command 'asdf'/);
-        expect(result.status).to.be.eql(1);
+        expect(result.stderr).to.match(/Unknown command 'this-is-a-wrong-command'/);
+        expect(result.code).to.be.eql(1);
       });
     });
     describe('Version Menu', function() {
       it('appears when called with --version', function() {
-        const stdout = blacksmithHandler.exec('--version').stdout;
-          // expects something like `1.0.0`, `1.0.0-alpha1`,
-          // `1.0.0 (2016-02-17 12:59:20)` or `1.0.0-alpha1 (2016-02-17 12:59:20)`
-          /* eslint-disable max-len */
-        expect(stdout).to.match(/^((\d+\.)?(\d+\.)?(\*|\d+))(-([a-zA-Z0-9_])+)?(\s\(([0-9]){4}-([0-9]){2}-([0-9]){2}\s([0-9]){2}:([0-9]){2}:([0-9]){2}\))?\n$/);
-          /* eslint-enable max-len */
+        const test = helpers.createTestEnv();
+        const result = blacksmithHandler.javascriptExec(test.configFile, '--version');
+        // expects something like `1.0.0`, `1.0.0-alpha1`,
+        // `1.0.0 (2016-02-17 12:59:20)` or `1.0.0-alpha1 (2016-02-17 12:59:20)`
+        /* eslint-disable max-len */
+        expect(result.stdout).to.match(
+          /^((\d+\.)?(\d+\.)?(\*|\d+))(-([a-zA-Z0-9_])+)?(\s\(([0-9]){4}-([0-9]){2}-([0-9]){2}\s([0-9]){2}:([0-9]){2}:([0-9]){2}\))?\n$/
+        );
+        /* eslint-enable max-len */
       });
     });
   });

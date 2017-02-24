@@ -9,7 +9,7 @@ const chai = require('chai');
 const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
-const helpers = require('./helpers');
+const helpers = require('../helpers');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
@@ -29,14 +29,21 @@ describe('#containerized-build()', function() {
   };
   const blacksmithHandler = new BlacksmithHandler();
   beforeEach(helpers.cleanTestEnv);
-  afterEach(helpers.cleanTestEnv);
+  // afterEach(helpers.cleanTestEnv);
   it('Builds a simple package from CLI', function() {
     const test = helpers.createTestEnv(extraConf);
     const component = helpers.createComponent(test);
-    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
-      `--config ${test.configFile} ` +
-      `containerized-build --build-dir ${test.buildDir} ` +
+    const result = blacksmithHandler.javascriptExec(
+      test.configFile,
+      `--log-level trace containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+    expect(result.code).to.be.eql(0,
+      `Build failed: \n` +
+      `stdout:\n` +
+      `${result.stdout}\n` +
+      `stderr:\n` +
+      `${result.stderr}`
+    );
     expect(
       path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
     ).to.be.file();
@@ -56,9 +63,17 @@ describe('#containerized-build()', function() {
     });
     const component = helpers.createComponent(test);
     helpers.addComponentToMetadataServer(metadataServerEndpoint, component);
-    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
-      `--config ${test.configFile} --log-level trace containerized-build --build-dir ${test.buildDir} ` +
+    const result = blacksmithHandler.javascriptExec(
+      test.configFile,
+      `--log-level trace containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+    expect(result.code).to.be.eql(0,
+      `Build failed: \n` +
+      `stdout:\n` +
+      `${result.stdout}\n` +
+      `stderr:\n` +
+      `${result.stderr}`
+    );
     expect(
       path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
     ).to.be.file();
@@ -122,10 +137,17 @@ describe('#containerized-build()', function() {
     const component2 = helpers.createComponent(test, {
       id: 'sample2',
     });
-    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
-      `--config ${test.configFile} ` +
+    const result = blacksmithHandler.javascriptExec(
+      test.configFile,
       `containerized-build --build-dir ${test.buildDir} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+    expect(result.code).to.be.eql(0,
+      `Build failed: \n` +
+      `stdout:\n` +
+      `${result.stdout}\n` +
+      `stderr:\n` +
+      `${result.stderr}`
+    );
     const continueBuildRes = blacksmithHandler.exec('--log-level trace ' +
       `--config ${test.configFile} ` +
       'containerized-build ' +
@@ -143,10 +165,18 @@ describe('#containerized-build()', function() {
   it('Can open a shell and list component content', function() {
     const test = helpers.createTestEnv(extraConf);
     const component = helpers.createComponent(test);
-    blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
-      `--config ${test.configFile} containerized-build --build-dir ${test.buildDir} ` +
+    const result = blacksmithHandler.javascriptExec(
+      test.configFile,
+      `containerized-build --build-dir ${test.buildDir} ` +
       `--json ${component.buildSpecFile} ` +
       `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+    expect(result.code).to.be.eql(0,
+      `Build failed: \n` +
+      `stdout:\n` +
+      `${result.stdout}\n` +
+      `stderr:\n` +
+      `${result.stderr}`
+    );
     blacksmithHandler.asyncExec(`--config ${test.configFile} shell ${test.buildDir}`);
     // Wait 50 seconds for the container to start
     let running = false;

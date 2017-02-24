@@ -157,4 +157,6 @@ describe('Component Provider', () => {
       platform: 'linux-x64'
     }).constructor.name, 'Bad class resolution').to.be.eql('sample2');
   });
+  require('./recipe-logic-provider');
+  require('./recipe-metadata-provider');
 });

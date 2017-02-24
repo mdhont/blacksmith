@@ -18,6 +18,7 @@ describe('Containerized Builder', function() {
   afterEach('clean environment', () => {
     helpers.cleanTestEnv();
   });
+  require('./utilities');
   it('creates an instance successfully', () => {
     const cb = new ContainerizedBuilder(bsmock.getBlacksmithInstance());
     expect(cb.logger).to.not.be.empty; // eslint-disable-line no-unused-expressions

@@ -6,7 +6,7 @@ const chai = require('chai');
 const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
-const helpers = require('./helpers');
+const helpers = require('../helpers');
 const os = require('os');
 const glob = require('glob');
 const BlacksmithHandler = helpers.Handler;
@@ -29,9 +29,12 @@ describe('#build()', function() {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+    const res = blacksmithHandler.javascriptExec(
+      test.configFile,
       `--config ${test.configFile} build --build-dir ${test.buildDir} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
+    );
+
     const artifact = glob.sync(path.join(
       test.buildDir, `artifacts/${component.id}-${component.version}-stack-${os.platform()}-${os.arch()}-*.tar.gz`
     ));
@@ -74,7 +77,8 @@ describe('#build()', function() {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
+    const res = blacksmithHandler.javascriptExec(
+      test.configFile,
       `--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
       `--config ${test.configFile} ` +
       'build --force-rebuild ' +

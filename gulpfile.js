@@ -9,15 +9,9 @@ const nodeVersion = '6.9.4';
 /* CI tasks */
 
 const testFiles = [
-  './test/core/**/*js',
-  './test/base-components/**/*js',
-  './test/help.js',
-  './test/configure.js',
-  './test/inspect.js',
-  './test/build.js',
-  './test/containerized-build.js',
+  './test/index.js'
 ];
-const srcFiles = ['index.js', './cli/*.js', './config-handler/*.js', './lib/**/*.js'].concat(testFiles);
+const srcFiles = ['index.js', './cli/**/*.js', './config-handler/*.js', './lib/**/*.js'];
 const testArgs = {sources: srcFiles, tests: testFiles};
 
 commonTasks.test(testArgs);

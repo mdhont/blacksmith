@@ -58,8 +58,7 @@ module.exports = [{
         nfile.join(this.arguments['build-dir'], 'config/components.json')
       );
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith, opts);
-      const availableImages = JSON.parse(nfile.read(
-        nfile.join(this.arguments['build-dir'], 'config/config.json'))).containerizedBuild.images;
+      const availableImages = parser.blacksmith.config.get('containerizedBuild.images');
       const imageId = opts.imageId || utilities.getImage(availableImages);
       if (_.isEmpty(imageId)) throw new Error('Not found the image description in the previous build');
       containerizedBuilder.dockerShell(this.arguments['build-dir'], imageId, _.assign({buildData}, opts));
