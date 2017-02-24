@@ -28,7 +28,7 @@ commonTasks.bundle({
     './package.json',
     './config.json',
     './index.js',
-    './cli/*.js',
+    './cli/**/*',
     './config-handler/*.js',
     './lib/**/*',
     './bin/**/*'
