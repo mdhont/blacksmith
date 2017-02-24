@@ -20,8 +20,9 @@ const utils = require('common-utils');
  * @property {Object} blacksmith - {@link Blacksmith} instance
  */
 class BlacksmithParser extends Parser {
-  constructor(blacksmith, options) {
-    super(_.opts(options, {toolName: 'blacksmith'}));
+  constructor(blacksmith, configFile) {
+    super({toolName: 'blacksmith'});
+    this.configFile = configFile;
     this.configHandler = blacksmith.config;
     this.blacksmith = blacksmith;
     this.populateBlacksmithCommands();

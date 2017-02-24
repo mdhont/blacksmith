@@ -12,9 +12,7 @@ module.exports = {
         'The --config option is not allowed with this command');
       }
       const action = this.getOptionValue('action');
-      const configFile = nfile.join(parser.configHandler.get('paths.rootDir'), 'config.json');
-      if (!nfile.exists(configFile)) throw new Error(`Unable to find the default config file at ${configFile}`);
-      const config = JSON.parse(nfile.read(configFile));
+      const config = JSON.parse(nfile.read(parser.configFile));
       const previousValue = _.get(config, this.arguments.property);
       if (_.isPlainObject(previousValue)) {
         const innerKeys = _.map(_.keys(previousValue), key => `${this.arguments.property}.${key}`);
@@ -47,7 +45,7 @@ module.exports = {
           default:
             throw new Error(`Option: ${action} not supported`);
         }
-        nfile.write(configFile, JSON.stringify(config, null, 2));
+        nfile.write(parser.configFile, JSON.stringify(config, null, 2));
       }
     }
     return callback;

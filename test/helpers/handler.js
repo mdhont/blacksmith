@@ -4,6 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const spawnSync = require('child_process').spawnSync;
 const spawn = require('child_process').spawn;
+const BlacksmithApp = require('../../cli/blacksmith-app');
 
 class BlacksmithHandler {
   constructor() {
@@ -25,11 +26,10 @@ class BlacksmithHandler {
     opts.stdio = [process.stdin, 'ignore', process.stderr];
     return spawn('/bin/bash', argsArray, opts);
   }
-  javascriptExec(script, args) {
+  javascriptExec(configFile, args) {
     if (_.isString(args)) args = args.split(' ');
     const oldStdoutWrite = process.stdout.write;
     const oldStderrWrite = process.stderr.write;
-    const oldArgv = process.argv;
     const res = {
       stdout: '',
       stderr: ''
@@ -42,10 +42,16 @@ class BlacksmithHandler {
       res.stderr += string;
       return true;
     };
-    process.argv = ['node', script].concat(args);
-    require(script);
-    delete require.cache[script];
-    process.argv = oldArgv;
+    let app = null;
+    try {
+      app = new BlacksmithApp(configFile, path.join(__dirname, '../../'));
+      app.run(args);
+    } catch (e) {
+      process.stdout.write = oldStdoutWrite;
+      process.stderr.write = oldStderrWrite;
+      throw e;
+    }
+    res.code = app.blacksmith.exitCode;
     process.stdout.write = oldStdoutWrite;
     process.stderr.write = oldStderrWrite;
     return res;

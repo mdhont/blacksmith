@@ -14,7 +14,7 @@ const BlacksmithCore = require('../lib/core');
  * @property {Object} blacksmith - {@link Blacksmith} instance
  */
 class BlacksmithApp {
-  constructor(configFile) {
+  constructor(configFile, rootDir) {
     if (!nfile.exists(configFile)) {
       if (nfile.exists(`${configFile}.sample`)) {
         console.log(`Default configuration not found. Assuming it is the first launch. ` +
@@ -25,13 +25,12 @@ class BlacksmithApp {
       }
     }
     const config = _.opts(JSON.parse(nfile.read(configFile)), {paths: {}});
-    config.paths.rootDir = nfile.dirname(configFile);
+    config.paths.rootDir = rootDir;
     const configHandler = new ConfigurationHandler(config);
     this.blacksmith = new BlacksmithCore(configHandler);
-    this._parser = new BlacksmithParser(this.blacksmith);
+    this._parser = new BlacksmithParser(this.blacksmith, configFile);
   }
-  run() {
-    const args = process.argv.slice(2);
+  run(args) {
     if (_.isEmpty(args)) {
       this._parser.showHelp();
     } else {
