@@ -24,7 +24,7 @@ function createTestEnv(conf) {
       'recipes': [componentDir],
       'output': testDir
     },
-    'componentTypeCollections': ['blacksmith-base-components'],
+    'componentTypeCollections': [],
     'metadataServer': {
       'activate': false,
       'prioritize': false,
