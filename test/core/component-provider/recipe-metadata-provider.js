@@ -37,6 +37,18 @@ describe('RecipeMetadataProvider', function() {
     };
     expect(metadata).to.be.eql(expectedMetadata);
   });
+  it('obtains the specified version if it is not a range', function() {
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test, {version: '1.0.0'});
+    const recipeMetadataProvider = new RecipeMetadataProvider([test.componentDir]);
+    const metadata = recipeMetadataProvider.getMetadata(component.id, {
+      recipeDir: path.join(test.componentDir, component.id),
+      requirements: {
+        version: '1.0.1'
+      }
+    });
+    expect(metadata.version).to.be.eql('1.0.1');
+  });
   it('validates a Recipe metadata', function() {
     expect(() => {
       RecipeMetadataProvider.validateMetadata({id: 'test', version: 'test', licenses: 'test'});
