@@ -227,6 +227,14 @@ describe('Component', () => {
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
 
+    it('"copyExtraFiles" should throw an error if the path is not valid', () => {
+      component.extraFiles = [null];
+      fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
+      expect(() => component.copyExtraFiles()).to.throw(
+        'Wrong extraFiles defintion. Found null instead of a file path'
+      );
+    });
+
     it('"copyExtraFiles" should throw an error if the path is not absolute', () => {
       component.extraFiles = ['test'];
       fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
@@ -263,6 +271,11 @@ describe('Component', () => {
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
 
+    it('"extract" should throw an error if the path is not set', () => {
+      component.sourceTarball = null;
+      expect(() => component.extract()).to.throw('The source tarball is missing. Received null');
+    });
+
     it('"extract" should throw an error if the path is not absolute', () => {
       component.sourceTarball = 'tarball.tar.gz';
       expect(() => component.extract()).to.throw('Path to sourceTarball should be absolute. Found tarball.tar.gz');
@@ -290,6 +303,11 @@ describe('Component', () => {
 
     afterEach('clean environment', () => {
       helpers.cleanTestEnv();
+    });
+
+    it('"patch" method should throw an error if the path is not valid', () => {
+      component.patches = [null];
+      expect(() => component.patch()).to.throw('Wrong patches defintion. Found null instead of a file path');
     });
 
     it('"patch" method should throw an error if the path is not absolute', () => {
