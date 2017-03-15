@@ -165,6 +165,8 @@ describe('Summary', () => {
     });
     const summary = new Summary(be);
     fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
+    fs.mkdirSync(path.join(test.prefix, 'folder'));
+    fs.writeFileSync(path.join(test.prefix, 'folder/hello'), 'hello');
     fs.writeFileSync(path.join(test.prefix, 'world'), 'world');
     const component = {
       metadata: {id: 'component', version: '1.0.0'},
@@ -178,6 +180,34 @@ describe('Summary', () => {
     expect(result).to.be.file; // eslint-disable-line no-unused-expressions
     expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.not.contain('hello');
     expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.contain('world');
+  });
+  it('compress the resulting artifacts excluding but including other artifact ones', () => {
+    const test = helpers.createTestEnv();
+    const be = new BuildEnvironment({
+      sourcePaths: [test.assetsDir],
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox
+    });
+    const summary = new Summary(be);
+    _.each(['component1', 'component2'], id => {
+      const prefix = path.join(test.prefix, id);
+      fs.mkdirSync(prefix);
+      fs.writeFileSync(path.join(prefix, 'hello'), 'hello');
+      fs.writeFileSync(path.join(prefix, 'world'), 'world');
+      const component = {
+        metadata: {id, version: '1.0.0'},
+        prefix: prefix,
+        srcDir: test.buildDir,
+        exclude: id === 'component1' ? ['hello'] : []
+      };
+      summary.addArtifact(component);
+    });
+    const result = path.join(test.buildDir, 'result.tar.gz');
+    summary.compressArtifacts(result);
+    expect(result).to.be.file; // eslint-disable-line no-unused-expressions
+    expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.not.contain('component1/hello');
+    expect(spawnSync('tar', ['-ztf', result]).stdout.toString()).to.contain('component2/hello');
   });
   it('compress with incrementalTracking', () => {
     const test = helpers.createTestEnv();
