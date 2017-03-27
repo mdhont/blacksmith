@@ -67,7 +67,7 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
 }
 ```
 
-####index.js
+#### index.js
 ```
 'use strict';
 
@@ -80,7 +80,7 @@ class Zlib extends Library {
 module.exports = Zlib;
 ```
 
-####Compilation action
+#### Compilation action
 
 Configure the Blacksmith default paths to the recipe, if not already configured in `config.json`, and then call the actual compilation command:
 
