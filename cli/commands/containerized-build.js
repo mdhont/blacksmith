@@ -6,18 +6,19 @@ const nfile = require('nami-utils').file;
 const _ = require('nami-utils/lodash-extra');
 const dockerUtils = require('docker-utils');
 const utilities = require('../../lib/containerized-builder/utilities');
+const utils = require('common-utils');
 
 module.exports = [{
-  name: 'containerized-build', minArgs: 0, maxArgs: -1, namedArgs: ['package[@version]:/path/to/tarball'],
+  name: 'containerized-build', minArgs: 1, maxArgs: 1, namedArgs: ['build-spec-definition'],
   callback: function(parser) {
     function callback() {
       dockerUtils.verifyConnection();
       const opts = _.opts(parser.parseOptions(this, {camelize: true}), {
         abortOnError: true, forceRebuild: false, imageId: null,
         incrementalTracking: true, continueAt: null,
-        json: '', modulesPaths: parser.blacksmith.config.get('paths.tarballs')
+        modulesPaths: parser.blacksmith.config.get('paths.tarballs')
       });
-      const buildData = parser.parseRequestedComponents(this.providedArguments, opts.json);
+      const buildData = utils.parseJSONFile(this.arguments['build-spec-definition']);
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
       const availableImages = parser.configHandler.get('containerizedBuild.images');
@@ -54,9 +55,7 @@ module.exports = [{
         imageId: null,
         config: parser.blacksmith.config
       });
-      const buildData = parser.parseRequestedComponents(null,
-        nfile.join(this.arguments['build-dir'], 'config/components.json')
-      );
+      const buildData = utils.parseJSONFile(nfile.join(this.arguments['build-dir'], 'config/containerized-build.json'));
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith, opts);
       const availableImages = parser.blacksmith.config.get('containerizedBuild.images');
       const imageId = opts.imageId || utilities.getImage(availableImages);

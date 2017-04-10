@@ -25,52 +25,12 @@ describe('#build()', function() {
   const jobs = 3;
   beforeEach(helpers.cleanTestEnv);
   afterEach(helpers.cleanTestEnv);
-  it('Builds a simple package from CLI', function() {
-    const test = helpers.createTestEnv();
-    const component = helpers.createComponent(test);
-    const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.javascriptExec(
-      test.configFile,
-      `--config ${test.configFile} build --build-dir ${test.buildDir} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    );
-
-    const artifact = glob.sync(path.join(
-      test.buildDir, `artifacts/${component.id}-${component.version}-stack-${os.platform()}-${os.arch()}-*.tar.gz`
-    ));
-    expect(artifact.length).to.be.eql(1);
-    expect(artifact[0]).to.be.file();
-    expect(path.join(test.sandbox, componentFolder, 'LICENSE')).to.be.file();
-    expect(res.stdout).to.contain(`prefix=${test.prefix}`);
-  });
-
-  xit('Builds a simple package using a metadata server', function() {
-    const metadataServerEndpoint = 'https://test-metadata-server.net/api/v1';
-    const test = helpers.createTestEnv({
-      'metadataServer': {
-        'activate': true,
-        'prioritize': true,
-        'endPoint': metadataServerEndpoint
-      }
-    });
-    const component = helpers.createComponent(test);
-    helpers.addComponentToMetadataServer(metadataServerEndpoint, component);
-    const componentFolder = `${component.id}-${component.version}`;
-    const res = blacksmithHandler.javascriptExec(path.join(__dirname, '../index.js'),
-    `--config ${test.configFile} --log-level debug build --build-dir ${test.buildDir} ` +
-    `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
-    expect(path.join(
-      test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
-    ).to.be.file();
-    expect(path.join(test.sandbox, componentFolder, 'LICENSE')).to.be.file();
-    expect(res.stdout).to.contain(`Contacting the metadata server to obtain info about ${component.id}`);
-  });
 
   it('Should throw an error if JSON file doesn\'t exists', function() {
     const test = helpers.createTestEnv();
     expect(function() {
-      blacksmithHandler.exec(`--config ${test.configFile} build --json /unexistent-path.json`);
-    }).to.throw('File /unexistent-path.json not found');
+      blacksmithHandler.exec(`--config ${test.configFile} build /unexistent-path.json`);
+    }).to.throw('File \'/unexistent-path.json\' does not exists');
   });
 
   it('Builds a simple package from JSON with available options', function() {
@@ -82,18 +42,14 @@ describe('#build()', function() {
       `--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
       `--config ${test.configFile} ` +
       'build --force-rebuild ' +
-      `--json ${component.buildSpecFile} ` +
       '--incremental-tracking ' +
+      `--build-dir ${test.buildDir} ` +
+      `--build-id ${component.buildSpec['build-id']} ` +
       `--prefix ${test.buildDir} ` +
-      `--max-jobs ${jobs}`);
-    // Modifies the build ID
-    expect(
-      path.join(
-        test.buildDir,
-        'artifacts',
-        `${component.buildSpec['build-id']}-${_platform(component)}.tar.gz`
-      )
-    ).to.be.file();
+      `--max-jobs ${jobs} ` +
+      `${component.buildSpecFile}`
+    );
+    expect(res.code).to.be.eql(0, res.stderr);
     expect(res.stdout).to.contain('Build completed. Artifacts stored');
     // Modifies the log level
     expect(res.stdout).to.match(/blacksm.*TRACE.*ENVIRONMENT VARIABLES/);
@@ -113,5 +69,13 @@ describe('#build()', function() {
     expect(res.stdout).to.contain(`Deleting ${path.join(test.sandbox, componentFolder)}`);
     // Strip components in the minify method
     expect(res.stdout).to.contain('Stripping binary file');
+    // Modifies the build ID
+    expect(
+      path.join(
+        test.buildDir,
+        'artifacts',
+        `${component.buildSpec['build-id']}-${_platform(component)}.tar.gz`
+      )
+    ).to.be.file();
   });
 });

@@ -56,7 +56,7 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
+      component.buildSpec,
       bsmock.baseImage,
       {
         buildDir: test.buildDir,
@@ -69,7 +69,6 @@ describe('Containerized Builder', function() {
     );
     // Validate parameters
     expect(log.text).to.contain(`--config /opt/blacksmith/config/config.json`);
-    expect(log.text).to.contain(`--json /opt/blacksmith/config/components.json`);
     expect(log.text).to.contain(`--continue-at=${component.id}`);
     expect(log.text).to.contain(`--incremental-tracking`);
     // Validate config and component content
@@ -89,8 +88,13 @@ describe('Containerized Builder', function() {
       }
     };
     expect(configRes).to.be.eql(desiredConf);
-    const components = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
-    expect(components).to.be.eql([`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`]);
+    const buildSpec = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
+    expect(buildSpec.components).to.be.eql([{
+      'extraFiles': [],
+      'id': 'sample1',
+      'patches': [],
+      'sourceTarball': `/tmp/sources/${path.basename(component.sourceTarball)}`
+    }]);
   });
 
   it('cannot allow to force the rebuild and continue at some point', () => {
@@ -138,7 +142,7 @@ describe('Containerized Builder', function() {
       buildDir: test.buildDir,
       exitOnEnd: false
     });
-    const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
+    const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     const desiredResult = {components: [
       {
         'sourceTarball': `/tmp/sources/${component.id}-${component.version}.tar.gz`,
