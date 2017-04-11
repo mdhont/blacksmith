@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const nfile = require('nami-utils').file;
 const utils = require('common-utils');
 
 module.exports = {
@@ -9,7 +10,15 @@ module.exports = {
     function callback() {
       const opts = _.defaults({}, parser.parseOptions(this, {camelize: true}), {abortOnError: true, forceRebuild: false,
          incrementalTracking: false, continueAt: null, platform: null});
-      const buildData = utils.parseJSONFile(this.arguments.buildSpec);
+      let buildData = null;
+      try {
+        buildData = utils.parseJSONFile(
+          this.arguments.buildSpec,
+          {schemaFile: nfile.join(__dirname, '../../schemas/build.json')}
+        );
+      } catch (e) {
+        throw new Error(`Unable to parse ${this.arguments.buildSpec}. Received:\n${e.message}`);
+      }
       parser.blacksmith.build(buildData, opts);
     }
     return callback;

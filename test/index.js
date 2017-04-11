@@ -26,7 +26,6 @@ describe('Container Builder', () => {
 describe('Commands', () => {
   require('./commands/help');
   require('./commands/configure');
-  require('./commands/inspect');
   require('./commands/build');
   require('./commands/containerized-build');
 });

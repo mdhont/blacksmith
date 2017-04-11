@@ -91,9 +91,14 @@ describe('Containerized Builder', function() {
     const buildSpec = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     expect(buildSpec.components).to.be.eql([{
       'extraFiles': [],
-      'id': 'sample1',
+      'id': component.id,
+      'version': component.version,
       'patches': [],
-      'sourceTarball': `/tmp/sources/${path.basename(component.sourceTarball)}`
+      'recipeLogicPath': component.buildSpec.components[0].recipeLogicPath,
+      'source': {
+        'tarball': `/tmp/sources/${path.basename(component.source.tarball)}`,
+        'sha256': component.source.sha256
+      }
     }]);
   });
 
@@ -134,7 +139,10 @@ describe('Containerized Builder', function() {
       components: [{
         id: component.id,
         version: component.version,
-        sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
+        source: {
+          tarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
+          sha256: component.source.sha256
+        },
         patches: [path.join(test.buildDir, 'test.patch')],
         extraFiles: [path.join(test.buildDir, 'test.extra')]
       }]
@@ -145,7 +153,10 @@ describe('Containerized Builder', function() {
     const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     const desiredResult = {components: [
       {
-        'sourceTarball': `/tmp/sources/${component.id}-${component.version}.tar.gz`,
+        'source': {
+          'tarball': `/tmp/sources/${path.basename(component.source.tarball)}`,
+          'sha256': component.source.sha256
+        },
         'patches': ['/tmp/sources/test.patch'],
         'extraFiles': ['/tmp/sources/test.extra'],
         'id': component.id,

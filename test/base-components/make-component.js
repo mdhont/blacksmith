@@ -34,11 +34,11 @@ describe('MakeComponent', () => {
     makeComponent.logger = helpers.getDummyLogger();
     sampleDir = path.join(testEnv.sandbox, 'sample-1.0.0');
     fs.mkdirSync(sampleDir);
-    spawnSync('tar', ['zvxf', component.sourceTarball], {cwd: sampleDir}).stdout.toString();
+    spawnSync('tar', ['zvxf', component.source.tarball], {cwd: sampleDir}).stdout.toString();
   });
 
   afterEach('clean environment', () => {
-    // helpers.cleanTestEnv();
+    helpers.cleanTestEnv();
   });
 
   describe('MakeComponent~make', () => {

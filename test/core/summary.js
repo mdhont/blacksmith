@@ -78,7 +78,10 @@ describe('Summary', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz'
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      }
     };
     summary.addArtifact(component);
     const artifact = summary.artifacts[0];
@@ -255,7 +258,10 @@ describe('Summary', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz',
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      }
     });
     summary.addArtifact(component);
     summary.end();
@@ -276,7 +282,10 @@ describe('Summary', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      'sourceTarball': 'test.tar.gz',
+      'source': {
+        'tarball': 'test.tar.gz',
+        'sha256': '1234'
+      },
       'parentClass': 'Library'
     };
     const obtainedResult = JSON.parse(summary.toJson({test: 2}));
@@ -311,7 +320,10 @@ describe('Summary', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz'
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      }
     };
     summary.addArtifact(component);
     summary.end();

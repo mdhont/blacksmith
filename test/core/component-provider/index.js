@@ -73,24 +73,6 @@ describe('Component Provider', () => {
     });
   });
 
-  it('parses a component reference', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
-    let parsedComponent = cp.parseComponentReference('test');
-    expect(parsedComponent.id).to.be.eql('test');
-    parsedComponent = cp.parseComponentReference(`test@1.2.3`);
-    expect(parsedComponent.id).to.be.eql('test');
-    expect(parsedComponent.version).to.be.eql('1.2.3');
-    parsedComponent = cp.parseComponentReference(`test:/tmp/test.tar.gz`);
-    expect(parsedComponent.id).to.be.eql('test');
-    expect(parsedComponent.sourceTarball).to.be.eql('/tmp/test.tar.gz');
-    parsedComponent = cp.parseComponentReference(`test@1.2.3:/tmp/test.tar.gz`);
-    expect(parsedComponent.id).to.be.eql('test');
-    expect(parsedComponent.version).to.be.eql('1.2.3');
-    expect(parsedComponent.sourceTarball).to.be.eql('/tmp/test.tar.gz');
-  });
-
   it('obtains a component', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
@@ -99,7 +81,7 @@ describe('Component Provider', () => {
     const componentObj = cp.getComponent(component.id);
     const desiredComponent = {
       'patches': [], 'patchLevel': 0, 'extraFiles': [], 'pick': [], 'exclude': ['.git', '.__empty_dir'], 'be': null,
-      'sourceTarball': null, 'noDoc': true, 'supportsParallelBuild': true, 'id': component.id,
+      'source': {}, 'noDoc': true, 'supportsParallelBuild': true, 'id': component.id,
       'metadata': {
         'id': component.id,
         'version': component.version,

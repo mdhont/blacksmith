@@ -40,7 +40,10 @@ describe('Component List', () => {
           }
         ]
       },
-      sourceTarball: component.buildSpec.components[0].sourceTarball,
+      source: {
+        tarball: component.source.tarball,
+        sha256: component.source.sha256,
+      },
       noDoc: true,
       supportsParallelBuild: true,
       id: component.id,
@@ -58,9 +61,7 @@ describe('Component List', () => {
       sandboxDir: test.sandbox
     });
     const component = helpers.createComponent(test);
-    const componentList = new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config);
+    const componentList = new ComponentList(component.buildSpec, cp, be, config);
     _.each(_getComponentProperties(component, be, componentList), (v, k) => {
       expect(componentList._components[0][k]).to.be.eql(v);
     });
@@ -78,7 +79,10 @@ describe('Component List', () => {
     const componentList = new ComponentList({
       components: [{
         id: component.id,
-        sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`)
+        source: {
+          tarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
+          sha256: component.source.sha256
+        },
       }]
     }, cp, be, config);
     _.each(_getComponentProperties(component, be, componentList), (v, k) => {
@@ -118,14 +122,12 @@ describe('Component List', () => {
     });
     const component = helpers.createComponent(test);
     _createUnvalidComponent(test, component);
-    expect(() => new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config, helpers.getDummyLogger(), {
+    expect(() => new ComponentList(component.buildSpec, cp, be, config, helpers.getDummyLogger(), {
       abortOnError: false, logger: helpers.getDummyLogger()
     })).to.not.throw('test');
-    expect(() => new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config, helpers.getDummyLogger(), {abortOnError: true})).to.throw('test');
+    expect(() => new ComponentList(component.buildSpec, cp, be, config, helpers.getDummyLogger(), {
+      abortOnError: true
+    })).to.throw('test');
   });
   it('skips validation', () => {
     const test = helpers.createTestEnv();
@@ -138,12 +140,12 @@ describe('Component List', () => {
       sandboxDir: test.sandbox
     });
     _createUnvalidComponent(test, component);
-    expect(() => new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config, helpers.getDummyLogger(), {validate: false})).to.not.throw('test');
-    expect(() => new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config, helpers.getDummyLogger(), {validate: true})).to.throw('test');
+    expect(() => new ComponentList(component.buildSpec, cp, be, config, helpers.getDummyLogger(), {
+      validate: false
+    })).to.not.throw('test');
+    expect(() => new ComponentList(component.buildSpec, cp, be, config, helpers.getDummyLogger(), {
+      validate: true
+    })).to.throw('test');
   });
   it('disables initialization', () => {
     const test = helpers.createTestEnv();
@@ -156,9 +158,9 @@ describe('Component List', () => {
     });
     const component = helpers.createComponent(test);
     _createComponentWithInitialization(test, component);
-    const componentList = new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config, helpers.getDummyLogger(), {initialize: true});
+    const componentList = new ComponentList(component.buildSpec, cp, be, config, helpers.getDummyLogger(), {
+      initialize: true
+    });
     expect(componentList._components[0].testProperty).to.be.eql(true);
   });
   it('adds a component', () => {
@@ -172,7 +174,7 @@ describe('Component List', () => {
       sandboxDir: test.sandbox
     });
     const componentList = new ComponentList([], cp, be, config);
-    componentList.add(`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`, be, cp, config);
+    componentList.add(component.buildSpec.components[0], be, cp, config);
     _.each(_getComponentProperties(component, be, componentList), (v, k) => {
       expect(componentList._components[0][k]).to.be.eql(v);
     });
@@ -189,7 +191,7 @@ describe('Component List', () => {
     });
     const componentList = new ComponentList([], cp, be, config);
     componentList.add({id: component.id, version: '123.123.123', patches: ['/test.patch']}, be, cp, config);
-    componentList.add(`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`, be, cp, config);
+    componentList.add(component.buildSpec.components[0], be, cp, config);
     const desiredResult = _getComponentProperties(component, be, componentList);
     desiredResult.patches = ['/test.patch'];
     _.each(desiredResult, (v, k) => {
@@ -206,9 +208,7 @@ describe('Component List', () => {
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
     });
-    const componentList = new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config);
+    const componentList = new ComponentList(component.buildSpec, cp, be, config);
     const returnedComponent = componentList.get(component.id);
     _.each(_getComponentProperties(component, be, componentList), (v, k) => {
       expect(returnedComponent[k]).to.be.eql(v);
@@ -225,9 +225,8 @@ describe('Component List', () => {
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
     });
-    const componentList = new ComponentList([
-      `${component1.id}:${test.assetsDir}/${component1.id}-${component1.version}.tar.gz`,
-      `${component2.id}:${test.assetsDir}/${component2.id}-${component2.version}.tar.gz`], cp, be, config);
+    component1.buildSpec.components = component1.buildSpec.components.concat(component2.buildSpec.components);
+    const componentList = new ComponentList(component1.buildSpec, cp, be, config);
     const componentObjs = componentList.getObjs();
     _.each([component1, component2], component => {
       const componentFromList = _.find(componentObjs, {id: component.id});
@@ -246,9 +245,7 @@ describe('Component List', () => {
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
     });
-    const componentList = new ComponentList([
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`
-    ], cp, be, config);
+    const componentList = new ComponentList(component.buildSpec, cp, be, config);
     const dep = {};
     dep[component.id] = ['--test-prefix={{prefix}}'];
     const flags = componentList.populateFlagsFromDependencies(dep);
@@ -265,9 +262,8 @@ describe('Component List', () => {
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
     });
-    const componentList = new ComponentList([
-      `${component1.id}:${test.assetsDir}/${component1.id}-${component1.version}.tar.gz`,
-      `${component2.id}:${test.assetsDir}/${component2.id}-${component2.version}.tar.gz`], cp, be, config);
+    component1.buildSpec.components = component1.buildSpec.components.concat(component2.buildSpec.components);
+    const componentList = new ComponentList(component1.buildSpec, cp, be, config);
     expect(componentList.getIndex(component1.id)).to.be.eql(0);
     expect(componentList.getIndex(component2.id)).to.be.eql(1);
   });
@@ -282,9 +278,8 @@ describe('Component List', () => {
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
     });
-    const componentList = new ComponentList([
-      `${component1.id}:${test.assetsDir}/${component1.id}-${component1.version}.tar.gz`,
-      `${component2.id}:${test.assetsDir}/${component2.id}-${component2.version}.tar.gz`], cp, be, config);
+    component1.buildSpec.components = component1.buildSpec.components.concat(component2.buildSpec.components);
+    const componentList = new ComponentList(component1.buildSpec, cp, be, config);
     expect(componentList.getPrintableList()).
     to.be.eql(`${component1.id}@${component1.version}, ${component2.id}@${component2.version}`);
   });

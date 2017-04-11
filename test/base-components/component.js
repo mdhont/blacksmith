@@ -272,17 +272,27 @@ describe('Component', () => {
     });
 
     it('"extract" should throw an error if the path is not set', () => {
-      component.sourceTarball = null;
+      component.source.tarball = null;
       expect(() => component.extract()).to.throw('The source tarball is missing. Received null');
     });
 
     it('"extract" should throw an error if the path is not absolute', () => {
-      component.sourceTarball = 'tarball.tar.gz';
-      expect(() => component.extract()).to.throw('Path to sourceTarball should be absolute. Found tarball.tar.gz');
+      component.source.tarball = 'tarball.tar.gz';
+      expect(() => component.extract()).to.throw('Path to source tarball should be absolute. Found tarball.tar.gz');
+    });
+
+    it('"extract" should throw an error if the checksum does not match', () => {
+      component.source.tarball = componentFixture.source.tarball;
+      component.source.sha256 = '1234';
+      expect(() => component.extract()).to.throw(
+        `Calculated SHA256 of ${componentFixture.source.tarball} (${componentFixture.source.sha256})` +
+        ` doesn't match the given one (1234)`
+      );
     });
 
     it('"extract" should unpack tarball', () => {
-      component.sourceTarball = componentFixture.sourceTarball;
+      component.source.tarball = componentFixture.source.tarball;
+      component.source.sha256 = componentFixture.source.sha256;
       component.extract();
       expect(path.join(
         testEnv.sandbox, `${component.metadata.id}-${component.metadata.version}`, 'exampleA/exampleA.txt'

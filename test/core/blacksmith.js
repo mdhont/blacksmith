@@ -30,6 +30,6 @@ describe('Blacksmith', () => {
     const bs = new Blacksmith(config);
     bs.bm.logger = helpers.getDummyLogger(log);
     const component = helpers.createComponent(test);
-    bs.build([`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`]);
+    bs.build(component.buildSpec);
   });
 });

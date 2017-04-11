@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const spawnSync = require('child_process').spawnSync;
@@ -73,7 +74,8 @@ function createComponent(test, options) {
   const componentVersion = options.version;
 
   fs.mkdirSync(path.join(test.componentDir, componentId));
-  fs.writeFileSync(path.join(test.componentDir, `${componentId}/index.js`), `
+  const recipeLogicPath = path.join(test.componentDir, `${componentId}/index.js`);
+  fs.writeFileSync(recipeLogicPath, `
     'use strict';
     class ${componentId} extends Library {}
     module.exports = ${componentId};`);
@@ -93,24 +95,37 @@ function createComponent(test, options) {
     }
   };
   fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
-  const buildSpec = {
-    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
-    'build-id': `${componentId}-test`,
-    'build-dir': test.buildDir,
-    components: [
-      {id: componentId, sourceTarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`)}
-    ]
-  };
-  const buildSpecFile = path.join(test.componentDir, `${componentId}.json`);
-  fs.writeFileSync(buildSpecFile, JSON.stringify(buildSpec, null, 2));
   spawnSync('tar', [
     'zcf', `${componentId}-${componentVersion}.tar.gz`,
     '-C', path.join(__dirname, 'assets/sample')].concat(
     fs.readdirSync(path.join(__dirname, 'assets/sample'))), {cwd: test.assetsDir});
+  const checksum = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`)))
+    .digest('hex');
+  const buildSpec = {
+    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
+    components: [
+      {
+        id: componentId,
+        version: options.version,
+        recipeLogicPath,
+        source: {
+          tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+          sha256: checksum
+        }
+      }
+    ]
+  };
+  const buildSpecFile = path.join(test.componentDir, `${componentId}.json`);
+  fs.writeFileSync(buildSpecFile, JSON.stringify(buildSpec, null, 2));
   return {
     id: componentId,
     version: componentVersion,
-    sourceTarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+    source: {
+      tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+      sha256: checksum
+    },
     licenseRelativePath: options.licenseRelativePath,
     licenseType: options.licenseType,
     licenseUrl: options.licenseUrl,

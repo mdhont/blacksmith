@@ -18,7 +18,14 @@ module.exports = [{
         incrementalTracking: true, continueAt: null,
         modulesPaths: parser.blacksmith.config.get('paths.tarballs')
       });
-      const buildData = utils.parseJSONFile(this.arguments.buildSpec);
+      let buildData = null;
+      try {
+        buildData = utils.parseJSONFile(this.arguments.buildSpec, {
+          schemaFile: nfile.join(__dirname, '../../schemas/containerized-build.json')
+        });
+      } catch (e) {
+        throw new Error(`Unable to parse ${this.arguments.buildSpec}. Received:\n${e.message}`);
+      }
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
       const availableImages = parser.configHandler.get('containerizedBuild.images');

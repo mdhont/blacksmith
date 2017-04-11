@@ -16,7 +16,10 @@ describe('Artifact', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz',
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      },
       compiledTarball: {
         path: 'compiled-test.tar.gz',
         sha256: 'testsha256'
@@ -32,7 +35,10 @@ describe('Artifact', () => {
         type: 'BSD3',
         licenseRelativePath: 'LICENSE'
       },
-      sourceTarball: 'test.tar.gz',
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      },
       compiledTarball: {
         path: 'compiled-test.tar.gz',
         sha256: 'testsha256'

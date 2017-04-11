@@ -129,7 +129,7 @@ describe('CompilableComponent', () => {
     it('should strip example binary', () => {
       testEnv.prefix = path.join(testEnv.prefix, 'sample');
       const component = helpers.createComponent(testEnv);
-      spawnSync('tar', ['zvxf', component.sourceTarball], {
+      spawnSync('tar', ['zvxf', component.source.tarball], {
         cwd: testEnv.prefix
       });
       ['ImageMagick', 'testfonts'].forEach((bin) => {
@@ -150,7 +150,7 @@ describe('CompilableComponent', () => {
     it('should strip example binary with spaces in the filename', () => {
       testEnv.prefix = path.join(testEnv.prefix, 'sample');
       const component = helpers.createComponent(testEnv);
-      spawnSync('tar', ['zvxf', component.sourceTarball], {
+      spawnSync('tar', ['zvxf', component.source.tarball], {
         cwd: testEnv.prefix
       });
       const nonStrippedFileSize = fs.statSync(path.join(testEnv.prefix, 'example')).size;

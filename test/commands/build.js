@@ -6,9 +6,8 @@ const chai = require('chai');
 const chaiFs = require('chai-fs');
 const chaiSubset = require('chai-subset');
 const expect = chai.expect;
+const fs = require('fs');
 const helpers = require('../helpers');
-const os = require('os');
-const glob = require('glob');
 const BlacksmithHandler = helpers.Handler;
 
 chai.use(chaiSubset);
@@ -31,6 +30,21 @@ describe('#build()', function() {
     expect(function() {
       blacksmithHandler.exec(`--config ${test.configFile} build /unexistent-path.json`);
     }).to.throw('File \'/unexistent-path.json\' does not exists');
+  });
+
+  it('Should throw an error if JSON file is not valid', function() {
+    const test = helpers.createTestEnv();
+    const wrongInputs = {a: 1};
+    const inputsFile = path.join(test.buildDir, 'inputs.json');
+    fs.writeFileSync(inputsFile, JSON.stringify(wrongInputs));
+    expect(function() {
+      blacksmithHandler.exec(`--config ${test.configFile} build ${inputsFile}`);
+    }).to.throw(
+      `Unable to parse ${inputsFile}. Received:\n` +
+      `Invalid JSON for the schema build:\n` +
+      `instance additionalProperty "a" exists in instance when not allowed\n` +
+      `instance requires property "components"\n`
+    );
   });
 
   it('Builds a simple package from JSON with available options', function() {
