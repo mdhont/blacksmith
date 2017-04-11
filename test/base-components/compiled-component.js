@@ -15,7 +15,7 @@ describe('CompiledComponent', () => {
   before('configure metadata', () => {
     metadata = {
       'id': 'sample',
-      'version': '1.0.0'
+      'latest': '1.0.0'
     };
   });
 
@@ -26,7 +26,7 @@ describe('CompiledComponent', () => {
     beforeEach('prepare compiled component', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      compiledComponent = new CompiledComponent(metadata);
+      compiledComponent = new CompiledComponent(metadata.id, metadata.latest, {}, metadata);
     });
 
     afterEach('clean environment', () => {

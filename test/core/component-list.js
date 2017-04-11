@@ -30,7 +30,7 @@ describe('Component List', () => {
       be: be,
       metadata: {
         'id': component.id,
-        'version': component.version,
+        'latest': component.version,
         'licenses': [
           {
             'licenseRelativePath': 'LICENSE',
@@ -47,6 +47,7 @@ describe('Component List', () => {
       noDoc: true,
       supportsParallelBuild: true,
       id: component.id,
+      version: component.version,
       componentList: componentList,
       maxParallelJobs: Infinity
     };
@@ -63,32 +64,10 @@ describe('Component List', () => {
     const component = helpers.createComponent(test);
     const componentList = new ComponentList(component.buildSpec, cp, be, config);
     _.each(_getComponentProperties(component, be, componentList), (v, k) => {
-      expect(componentList._components[0][k]).to.be.eql(v);
+      expect(componentList._components[0][k]).to.be.eql(v, `Failed to validate ${k}`);
     });
   });
-  it('creates an instance using an Object as parameter', () => {
-    const test = helpers.createTestEnv();
-    const component = helpers.createComponent(test);
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
-    const be = new BuildEnvironment({
-      outputDir: test.buildDir,
-      prefixDir: test.prefix,
-      sandboxDir: test.sandbox
-    });
-    const componentList = new ComponentList({
-      components: [{
-        id: component.id,
-        source: {
-          tarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
-          sha256: component.source.sha256
-        },
-      }]
-    }, cp, be, config);
-    _.each(_getComponentProperties(component, be, componentList), (v, k) => {
-      expect(componentList._components[0][k]).to.be.eql(v);
-    });
-  });
+
   function _createUnvalidComponent(test, component) {
     const logicFile = path.join(test.componentDir, component.id, 'index.js');
     const logic = `'use strict';
@@ -100,6 +79,7 @@ describe('Component List', () => {
     module.exports = ${component.id};`;
     fs.writeFileSync(logicFile, logic);
   }
+
   function _createComponentWithInitialization(test, component) {
     const logicFile = path.join(test.componentDir, component.id, 'index.js');
     const logic = `'use strict';
@@ -111,6 +91,7 @@ describe('Component List', () => {
     module.exports = ${component.id};`;
     fs.writeFileSync(logicFile, logic);
   }
+
   it('changes abortOnError', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));

@@ -95,6 +95,7 @@ describe('Containerized Builder', function() {
       'version': component.version,
       'patches': [],
       'recipeLogicPath': component.buildSpec.components[0].recipeLogicPath,
+      'metadata': component.buildSpec.components[0].metadata,
       'source': {
         'tarball': `/tmp/sources/${path.basename(component.source.tarball)}`,
         'sha256': component.source.sha256

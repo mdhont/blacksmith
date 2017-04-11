@@ -19,7 +19,7 @@ describe('MakeComponent', () => {
   beforeEach('configure metadata', () => {
     metadata = {
       'id': 'sample',
-      'version': '1.0.0'
+      'latest': '1.0.0'
     };
     helpers.cleanTestEnv();
     testEnv = helpers.createTestEnv();
@@ -29,7 +29,7 @@ describe('MakeComponent', () => {
       prefix: testEnv.prefix,
       sandbox: testEnv.sandbox
     });
-    makeComponent = new MakeComponent(metadata);
+    makeComponent = new MakeComponent(metadata.id, metadata.latest, {}, metadata);
     makeComponent.setup({be: dummyBE}, null);
     makeComponent.logger = helpers.getDummyLogger();
     sampleDir = path.join(testEnv.sandbox, 'sample-1.0.0');

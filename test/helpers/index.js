@@ -82,17 +82,14 @@ function createComponent(test, options) {
   const metadata = {
     'id': componentId,
     'latest': componentVersion,
-    'component': {
-      'id': componentId,
-      'licenses': [
-        {
-          'type': options.licenseType,
-          'licenseRelativePath': options.licenseRelativePath,
-          'url': options.licenseUrl,
-          'main': true
-        }
-      ]
-    }
+    'licenses': [
+      {
+        'type': options.licenseType,
+        'licenseRelativePath': options.licenseRelativePath,
+        'url': options.licenseUrl,
+        'main': true
+      }
+    ]
   };
   fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
   spawnSync('tar', [
@@ -108,8 +105,9 @@ function createComponent(test, options) {
     components: [
       {
         id: componentId,
-        version: options.version,
+        version: componentVersion,
         recipeLogicPath,
+        metadata,
         source: {
           tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
           sha256: checksum

@@ -17,7 +17,7 @@ describe('CompilableComponent', () => {
   before('prepare metadata', () => {
     metadata = {
       id: 'sample',
-      version: '1.0.0'
+      latest: '1.0.0'
     };
   });
 
@@ -27,7 +27,7 @@ describe('CompilableComponent', () => {
     const prefixDir = path.join(dir, 'prefix');
 
     before('prepare compilable component', () => {
-      compilableComponent = new CompilableComponent(metadata);
+      compilableComponent = new CompilableComponent(metadata.id, metadata.latest, {}, metadata);
       compilableComponent.setup({be: {prefixDir: prefixDir}}, {});
     });
 
@@ -49,7 +49,7 @@ describe('CompilableComponent', () => {
     const dir = '/tmp/blacksmith_test_env';
 
     beforeEach('prepare compilable component', () => {
-      compilableComponent = new CompilableComponent(metadata);
+      compilableComponent = new CompilableComponent(metadata.id, metadata.latest, {}, metadata);
       compilableComponent.setup({be: {prefixDir: path.join(dir, 'prefix')}});
     });
 
@@ -97,7 +97,7 @@ describe('CompilableComponent', () => {
         fs.mkdirSync(path.join(sampleDir, folder));
         fs.writeFileSync(path.join(sampleDir, folder, 'example'), '');
       });
-      compilableComponent = new CompilableComponent(metadata);
+      compilableComponent = new CompilableComponent(metadata.id, metadata.latest, {}, metadata);
       compilableComponent.setup({be: {prefixDir: testEnv.prefix}}, null);
     });
 
