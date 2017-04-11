@@ -9,7 +9,7 @@ const utilities = require('../../lib/containerized-builder/utilities');
 const utils = require('common-utils');
 
 module.exports = [{
-  name: 'containerized-build', minArgs: 1, maxArgs: 1, namedArgs: ['build-spec-definition'],
+  name: 'containerized-build', minArgs: 1, maxArgs: 1, namedArgs: ['buildSpec'],
   callback: function(parser) {
     function callback() {
       dockerUtils.verifyConnection();
@@ -18,7 +18,7 @@ module.exports = [{
         incrementalTracking: true, continueAt: null,
         modulesPaths: parser.blacksmith.config.get('paths.tarballs')
       });
-      const buildData = utils.parseJSONFile(this.arguments['build-spec-definition']);
+      const buildData = utils.parseJSONFile(this.arguments.buildSpec);
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
       const availableImages = parser.configHandler.get('containerizedBuild.images');

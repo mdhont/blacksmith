@@ -4,12 +4,12 @@ const _ = require('lodash');
 const utils = require('common-utils');
 
 module.exports = {
-  name: 'build', minArgs: 1, maxArgs: 1, namedArgs: ['build-spec-definition'],
+  name: 'build', minArgs: 1, maxArgs: 1, namedArgs: ['buildSpec'],
   callback: function(parser) {
     function callback() {
       const opts = _.defaults({}, parser.parseOptions(this, {camelize: true}), {abortOnError: true, forceRebuild: false,
          incrementalTracking: false, continueAt: null, platform: null});
-      const buildData = utils.parseJSONFile(this.arguments['build-spec-definition']);
+      const buildData = utils.parseJSONFile(this.arguments.buildSpec);
       parser.blacksmith.build(buildData, opts);
     }
     return callback;
