@@ -118,11 +118,16 @@ describe('Component', () => {
       helpers.cleanTestEnv();
     });
 
-    it('"fulfillLicenseRequirements" method should throw an error if ' +
+    it('"fulfillLicenseRequirements" method should show a warning if ' +
     'there is no license defined in the metadata', () => {
       component.setup({be: null}, null);
       component.metadata.licenses = [];
-      expect(() => component.fulfillLicenseRequirements()).to.throw(`You should specify a proper 'licenses' field`);
+      let log = '';
+      component.logger.debug = (msg) => log += msg;
+      component.fulfillLicenseRequirements();
+      expect(log).to.contain(
+        `Skipping license propagation. There is no license information available for ${component.id}`
+      );
     });
 
     it('"fulfillLicenseRequirements" method should throw an error if "main" attribute is not defined', () => {
