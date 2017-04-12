@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-expressions */
 
 const Component = require('../../lib/base-components/component');
+const crypto = require('crypto');
 const helpers = require('../helpers');
 const path = require('path');
 const fs = require('fs');
@@ -208,24 +209,23 @@ describe('Component', () => {
       component = new Component(metadata.id, metadata.latest, {}, metadata);
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
-
-    it('"copyExtraFiles" should throw an error if the path is not valid', () => {
-      component.extraFiles = [null];
+    it('"copyExtraFiles" should throw an error if the checksum does not match', () => {
+      const extraFiles = [{path: path.join(testEnv.testDir, 'test1'), sha256: '1234'}];
+      fs.writeFileSync(extraFiles[0].path, 'content');
+      component.extraFiles = extraFiles;
       fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
       expect(() => component.copyExtraFiles()).to.throw(
-        'Wrong extraFiles defintion. Found null instead of a file path'
+        `Calculated SHA256 of ${path.join(testEnv.testDir, 'test1')} ` +
+        `(ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73) doesn\'t match the given one (1234)`
       );
     });
 
-    it('"copyExtraFiles" should throw an error if the path is not absolute', () => {
-      component.extraFiles = ['test'];
-      fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
-      expect(() => component.copyExtraFiles()).to.throw('Path to extraFiles should be absolute. Found test');
-    });
-
     it('"copyExtraFiles" should copy two extra files', () => {
-      const extraFiles = [path.join(testEnv.testDir, 'test1'), path.join(testEnv.testDir, 'test2')];
-      extraFiles.forEach(extraFile => fs.writeFileSync(extraFile, ''));
+      const extraFiles = [{path: path.join(testEnv.testDir, 'test1')}, {path: path.join(testEnv.testDir, 'test2')}];
+      extraFiles.forEach(extraFile => {
+        fs.writeFileSync(extraFile.path, 'content');
+        extraFile.sha256 = 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73';
+      });
       component.extraFiles = extraFiles;
       fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
       component.copyExtraFiles();
@@ -297,18 +297,25 @@ describe('Component', () => {
       helpers.cleanTestEnv();
     });
 
-    it('"patch" method should throw an error if the path is not valid', () => {
-      component.patches = [null];
-      expect(() => component.patch()).to.throw('Wrong patches defintion. Found null instead of a file path');
-    });
-
-    it('"patch" method should throw an error if the path is not absolute', () => {
-      component.patches = ['test'];
-      expect(() => component.patch()).to.throw('Path to patches should be absolute. Found test');
+    it('"patch" should throw an error if the checksum does not match', () => {
+      const patches = [{path: path.join(testEnv.testDir, 'test1'), sha256: '1234'}];
+      fs.writeFileSync(patches[0].path, 'content');
+      component.patches = patches;
+      fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
+      expect(() => component.patch()).to.throw(
+        `Calculated SHA256 of ${path.join(testEnv.testDir, 'test1')} ` +
+        `(ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73) doesn\'t match the given one (1234)`
+      );
     });
 
     it('"patch" method should execute the patch in the file', () => {
-      component.patches = [path.join(__dirname, 'fixtures', 'patch')];
+      component.patches = [{
+        path: path.join(__dirname, 'fixtures', 'patch'),
+        sha256: crypto
+          .createHash('sha256')
+          .update(fs.readFileSync(path.join(__dirname, 'fixtures', 'patch')))
+          .digest('hex')
+      }];
       const sampleDir = path.join(testEnv.sandbox, 'sample-1.0.0');
       fs.mkdirSync(sampleDir);
       fs.writeFileSync(

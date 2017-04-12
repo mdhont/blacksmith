@@ -159,8 +159,8 @@ describe('Containerized Builder', function() {
           'tarball': `/tmp/sources/${component.id}/${path.basename(component.source.tarball)}`,
           'sha256': component.source.sha256
         },
-        'patches': [`/tmp/sources/${component.id}/test.patch`],
-        'extraFiles': [`/tmp/sources/${component.id}/test.extra`],
+        'patches': [{path: `/tmp/sources/${component.id}/test.patch`, sha256: '1234'}],
+        'extraFiles': [{path: `/tmp/sources/${component.id}/test.extra`, sha256: '1234'}],
         'id': component.id,
         'version': component.version
       }
