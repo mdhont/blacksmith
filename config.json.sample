@@ -3,16 +3,10 @@
     "prefix": "/usr/local"
   },
   "paths": {
-    "recipes": ["./recipes"],
     "output": "./output",
     "sandbox": "./sandbox"
   },
   "componentTypeCollections": ["blacksmith-extra-component-types"],
-  "metadataServer": {
-    "activate": false,
-    "prioritize": false,
-    "endPoint": null
-  },
   "plugins": [],
   "containerizedBuild": {
     "images": [{

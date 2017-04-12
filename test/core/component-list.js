@@ -171,7 +171,13 @@ describe('Component List', () => {
       sandboxDir: test.sandbox
     });
     const componentList = new ComponentList([], cp, be, config);
-    componentList.add({id: component.id, version: '123.123.123', patches: ['/test.patch']}, be, cp, config);
+    const newComponent = {
+      id: component.id,
+      version: '123.123.123',
+      patches: ['/test.patch'],
+      recipeLogicPath: component.recipeLogicPath
+    };
+    componentList.add(newComponent, be, cp, config);
     componentList.add(component.buildSpec.components[0], be, cp, config);
     const desiredResult = _getComponentProperties(component, be, componentList);
     desiredResult.patches = ['/test.patch'];

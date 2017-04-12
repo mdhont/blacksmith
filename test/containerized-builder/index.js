@@ -79,7 +79,6 @@ describe('Containerized Builder', function() {
         output: '/opt/blacksmith/output',
         logs: '/tmp/logs',
         sandbox: test.sandbox,
-        recipes: [test.componentDir]
       },
       compilation: {prefix: test.prefix},
       metadataServer: config.metadataServer,
@@ -94,10 +93,10 @@ describe('Containerized Builder', function() {
       'id': component.id,
       'version': component.version,
       'patches': [],
-      'recipeLogicPath': component.buildSpec.components[0].recipeLogicPath,
+      'recipeLogicPath': `/tmp/recipes/${component.id}/index.js`,
       'metadata': component.buildSpec.components[0].metadata,
       'source': {
-        'tarball': `/tmp/sources/${path.basename(component.source.tarball)}`,
+        'tarball': `/tmp/sources/${component.id}/${path.basename(component.source.tarball)}`,
         'sha256': component.source.sha256
       }
     }]);
@@ -124,7 +123,7 @@ describe('Containerized Builder', function() {
     )).to.throw('You cannot use --force-rebuild and --continue-at in the same build');
   });
 
-  it('parses component properties as an object', () => {
+  it('parses component properties with patches and extraFiles', () => {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
@@ -140,12 +139,13 @@ describe('Containerized Builder', function() {
       components: [{
         id: component.id,
         version: component.version,
+        recipeLogicPath: component.recipeLogicPath,
         source: {
           tarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
           sha256: component.source.sha256
         },
-        patches: [path.join(test.buildDir, 'test.patch')],
-        extraFiles: [path.join(test.buildDir, 'test.extra')]
+        patches: [{path: path.join(test.buildDir, 'test.patch'), sha256: '1234'}],
+        extraFiles: [{path: path.join(test.buildDir, 'test.extra'), sha256: '1234'}]
       }]
     }, bsmock.baseImage, {
       buildDir: test.buildDir,
@@ -154,12 +154,13 @@ describe('Containerized Builder', function() {
     const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     const desiredResult = {components: [
       {
+        'recipeLogicPath': `/tmp/recipes/${component.id}/index.js`,
         'source': {
-          'tarball': `/tmp/sources/${path.basename(component.source.tarball)}`,
+          'tarball': `/tmp/sources/${component.id}/${path.basename(component.source.tarball)}`,
           'sha256': component.source.sha256
         },
-        'patches': ['/tmp/sources/test.patch'],
-        'extraFiles': ['/tmp/sources/test.extra'],
+        'patches': [`/tmp/sources/${component.id}/test.patch`],
+        'extraFiles': [`/tmp/sources/${component.id}/test.extra`],
         'id': component.id,
         'version': component.version
       }

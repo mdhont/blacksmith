@@ -120,6 +120,7 @@ function createComponent(test, options) {
   return {
     id: componentId,
     version: componentVersion,
+    recipeLogicPath,
     source: {
       tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
       sha256: checksum

@@ -72,16 +72,6 @@ describe('Component Provider', () => {
       `Current component ${JSON.stringify(simplifiedComponent)} does not satisfies ~2`
     );
   });
-  it('throws an error if no component is found', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
-    expect(() => cp.getComponent({
-      id: 'no-exists', version: '0'
-    })).to.throw(
-      `Unable to find a recipe for no-exists in ${test.componentDir}`
-    );
-  });
   it('obtains a component class based on requirements', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
@@ -96,20 +86,19 @@ describe('Component Provider', () => {
         {version: '>=2.0', platforms: ['linux-x64'], class: sample2}
       ];`
     );
-    expect(cp.getComponent({
-      id: component.id, version: component.version
-    }).constructor.name, 'Bad class resolution').to.be.eql('sample1');
-    expect(cp.getComponent({
-      id: component.id, version: '1.0.0'
-    }).constructor.name, 'Bad class resolution').to.be.eql('sample1');
-    expect(cp.getComponent({
-      id: component.id, version: '2.0.0'
-    }).constructor.name, 'Bad class resolution').to.be.eql('sample2');
-    expect(() => cp.getComponent({
-      id: component.id, version: component.version
-    }, {
-      platform: 'linux-x64'
-    }).constructor.name, 'Bad class resolution').to.be.throw(
+    const componentTest = _.assign({}, component.buildSpec.components[0], {version: '1.0.0'});
+    expect(
+      cp.getComponent(componentTest).constructor.name,
+      'Bad class resolution'
+    ).to.be.eql('sample1');
+    componentTest.version = '2.0.0';
+    expect(
+      cp.getComponent(componentTest).constructor.name,
+      'Bad class resolution'
+    ).to.be.eql('sample2');
+    expect(() => cp.getComponent(componentTest, {platform: 'linux'}),
+      'Bad class resolution'
+    ).to.throw(
       'Cannot find any valid specification matching the provided requirements'
     );
   });
