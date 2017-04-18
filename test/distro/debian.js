@@ -1,0 +1,50 @@
+'use strict';
+
+const Debian = require('../../lib/distro/debian');
+const chai = require('chai');
+const expect = chai.expect;
+const nos = require('nami-utils').os;
+const path = require('path');
+const sinon = require('sinon');
+
+describe('Debian', () => {
+  beforeEach(() => {
+    sinon.stub(nos, 'runProgram').callsFake((command, args, options) => {
+      options = options || {};
+      let text = '';
+      switch (command) {
+        case 'file':
+          text = `${args}: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, ` +
+            `interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=12345, stripped`;
+          break;
+        case 'ldd':
+          text = 'libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f8526cd7000)' +
+            '/lib64/ld-linux-x86-64.so.2 (0x000055e8c385d000)';
+          break;
+        case 'dpkg -S':
+          text = 'libc6:amd64: /lib/x86_64-linux-gnu/libc.so.6\n';
+          break;
+        default:
+
+      }
+      return options.retrieveStdStreams ? {stdout: text} : text;
+    });
+  });
+  afterEach(() => {
+    nos.runProgram.restore();
+  });
+  it('provides an update command', () => {
+    const debian = new Debian('x64');
+    expect(debian.updateCommand).to.be.eql('apt-get update -y');
+  });
+  it('provides an install command', () => {
+    const debian = new Debian('x64');
+    expect(debian.installCommand('zlib')).to.be.eql('apt-get install -y --no-install-recommends zlib');
+    expect(debian.installCommand(['zlib', 'openssl']))
+      .to.be.eql('apt-get install -y --no-install-recommends zlib openssl');
+  });
+  it('returns a list of system packages given a list of files', () => {
+    const debian = new Debian('x64');
+    expect(debian.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['libc6']);
+  });
+});
