@@ -22,14 +22,13 @@ function createTestEnv(conf) {
     },
     'paths': {
       'sandbox': sandbox,
-      'recipes': [componentDir],
       'output': testDir
     },
     'componentTypeCollections': [],
     'containerizedBuild': {
       'images': [
         {
-          'id': 'test-image',
+          'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r2',
           'platform': {
             'os': 'linux',
             'arch': 'x64',

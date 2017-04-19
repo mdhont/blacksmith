@@ -14,6 +14,4 @@ describe('Distro', () => {
       expect(() => distroFactory.getDistro('??', 'x64')).to.throw('Distro type ?? is not supported');
     });
   });
-  require('./centos');
-  require('./debian');
 });
