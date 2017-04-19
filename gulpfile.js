@@ -30,6 +30,7 @@ commonTasks.bundle({
     './index.js',
     './cli/**/*',
     './config-handler/*.js',
+    './schemas/*',
     './lib/**/*',
     './bin/**/*'
   ],
