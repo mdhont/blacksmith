@@ -44,6 +44,7 @@ commonTasks.npm({
   sources: [
     './index.js',
     './cli/*.js',
+    './schemas/*',
     './config-handler/*.js',
     './lib/**/*'
   ],
