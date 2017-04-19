@@ -27,6 +27,7 @@ commonTasks.bundle({
   sources: [
     './package.json',
     './config.json',
+    './config.json.sample',
     './index.js',
     './cli/**/*',
     './config-handler/*.js',
