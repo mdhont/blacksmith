@@ -21,8 +21,11 @@ describe('Debian', () => {
           text = 'libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f8526cd7000)' +
             '/lib64/ld-linux-x86-64.so.2 (0x000055e8c385d000)';
           break;
-        case 'dpkg -S':
+        case 'dpkg':
           text = 'libc6:amd64: /lib/x86_64-linux-gnu/libc.so.6\n';
+          break;
+        case 'dpkg-query':
+          text = 'libc6:amd64 2.19-18+deb8u7,libcurl3:amd64 7.38.0-4+deb8u5,';
           break;
         default:
 
@@ -46,5 +49,12 @@ describe('Debian', () => {
   it('returns a list of system packages given a list of files', () => {
     const debian = new Debian('x64');
     expect(debian.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['libc6']);
+  });
+  it('returns a list of system packages installed', () => {
+    const debian = new Debian('x64');
+    expect(debian.listPackages()).to.be.eql([
+      {name: 'libc6:amd64', version: '2.19-18+deb8u7'},
+      {name: 'libcurl3:amd64', version: '7.38.0-4+deb8u5'},
+    ]);
   });
 });

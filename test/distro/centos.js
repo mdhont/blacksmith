@@ -21,8 +21,9 @@ describe('Centos', () => {
           text = 'libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f8526cd7000)' +
             '/lib64/ld-linux-x86-64.so.2 (0x000055e8c385d000)';
           break;
-        case 'rpm -qf':
-          text = 'glibc-2.17-157.el7_3.1.x86_64\n';
+        case 'rpm':
+          if (args[0] === '-qf') text = 'glibc-2.17-157.el7_3.1.x86_64\n';
+          if (args[0] === '-aq') text = 'glibc 2.17-157,ncurses-libs 5.9,';
           break;
         default:
 
@@ -46,5 +47,12 @@ describe('Centos', () => {
   it('returns a list of system packages given a list of files', () => {
     const centos = new Centos('x64');
     expect(centos.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['glibc']);
+  });
+  it('returns a list of system packages installed', () => {
+    const centos = new Centos('x64');
+    expect(centos.listPackages()).to.be.eql([
+      {name: 'glibc', version: '2.17-157'},
+      {name: 'ncurses-libs', version: '5.9'},
+    ]);
   });
 });

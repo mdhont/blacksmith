@@ -2,6 +2,7 @@
 
 const Summary = require('../../lib/core/build-manager/artifacts/summary');
 const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
+const Debian = require('../../lib/distro/debian');
 const Distro = require('../../lib/distro/distro');
 const helpers = require('../helpers');
 const path = require('path');
@@ -308,8 +309,17 @@ describe('Summary', () => {
         'sha256': '1234'
       },
       'runtimePackages': [],
+      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
-    const obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
+    let obtainedResult = null;
+    try {
+      obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    } catch (e) {
+      Debian.prototype.listPackages.restore();
+      throw e;
+    }
+    Debian.prototype.listPackages.restore();
     const check = function(toCheck, valid) {
       _.each(valid, (v, k) => {
         if (_.isObject(v) && !_.isRegExp(v)) {
@@ -367,9 +377,18 @@ describe('Summary', () => {
       'prefix': test.prefix,
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
-      'runtimePackages': ['libc1', 'libc2', 'libc3']
+      'runtimePackages': ['libc1', 'libc2', 'libc3'],
+      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
-    const obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
+    let obtainedResult = null;
+    try {
+      obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    } catch (e) {
+      Debian.prototype.listPackages.restore();
+      throw e;
+    }
+    Debian.prototype.listPackages.restore();
     const check = function(toCheck, valid) {
       _.each(valid, (v, k) => {
         if (_.isObject(v) && !_.isRegExp(v)) {
