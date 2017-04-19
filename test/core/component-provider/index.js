@@ -102,5 +102,4 @@ describe('Component Provider', () => {
       'Cannot find any valid specification matching the provided requirements'
     );
   });
-  require('./recipe-logic-provider');
 });

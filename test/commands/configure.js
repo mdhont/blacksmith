@@ -16,7 +16,7 @@ describe('#configure', function() {
       () => blacksmithHandler.exec('configure paths')
     ).to.throw('paths is an Object, you need to specify one of its properties');
     expect(
-      () => blacksmithHandler.exec('configure --action add paths.recipes')
+      () => blacksmithHandler.exec('configure --action add componentTypeCollections')
     ).to.throw('You need to specify a value');
   });
   function check(configFile, property, value) {
@@ -40,17 +40,17 @@ describe('#configure', function() {
     const test = helpers.createTestEnv();
     blacksmithHandler.javascriptExec(
       test.configFile,
-      'configure --action set paths.recipes /tmp/test');
-    expect(check(test.configFile, 'paths.recipes', ['/tmp/test'])).to.be.eql(true);
+      'configure --action set componentTypeCollections test');
+    expect(check(test.configFile, 'componentTypeCollections', ['test'])).to.be.eql(true);
   });
 
   it('It adds a value to an array property', function() {
     const test = helpers.createTestEnv();
-    const previousValue = get(test.configFile, 'paths.recipes');
+    const previousValue = get(test.configFile, 'componentTypeCollections');
     blacksmithHandler.javascriptExec(
       test.configFile,
-      'configure --action add paths.recipes /tmp/test');
-    expect(check(test.configFile, 'paths.recipes', previousValue.concat('/tmp/test'))).to.be.eql(true);
+      'configure --action add componentTypeCollections test');
+    expect(check(test.configFile, 'componentTypeCollections', previousValue.concat('test'))).to.be.eql(true);
   });
   it('It unset a property', function() {
     const test = helpers.createTestEnv();

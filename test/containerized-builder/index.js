@@ -13,10 +13,6 @@ const sinon = require('sinon');
 const spawnSync = require('child_process').spawnSync;
 const spawn = require('child_process').spawn;
 
-
-require('./image-provider/image-registry');
-require('./image-provider/image-builder');
-require('./image-provider/image-provider');
 describe('ContainerizedBuilder', function() {
   this.timeout(30000);
   beforeEach(() => {

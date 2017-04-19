@@ -1,31 +1,46 @@
 'use strict';
 /* eslint-disable no-unused-expressions */
 
+// We need a function to run the tests in a logic order
+function importTest(path) {
+  require(path);
+}
+
 describe('Core', () => {
-  require('./core/artifact');
-  require('./core/fstracker');
-  require('./core/build-environment');
-  require('./core/build-manager');
-  require('./core/component-provider');
-  require('./core/component-list');
-  require('./core/blacksmith');
+  importTest('./core/artifact');
+  importTest('./core/fstracker');
+  importTest('./core/build-environment');
+  importTest('./core/build-manager');
+  importTest('./core/component-provider');
+  importTest('./core/component-provider/recipe-logic-provider');
+  importTest('./core/component-list');
+  importTest('./core/blacksmith');
 });
 
 describe('Base Components', () => {
-  require('./base-components/compilable-component');
-  require('./base-components/compiled-component');
-  require('./base-components/component');
-  require('./base-components/library');
-  require('./base-components/make-component');
+  importTest('./base-components/compilable-component');
+  importTest('./base-components/compiled-component');
+  importTest('./base-components/component');
+  importTest('./base-components/library');
+  importTest('./base-components/make-component');
+});
+
+describe('Distributions', () => {
+  importTest('./distro/debian');
+  importTest('./distro/centos');
+  importTest('./distro');
 });
 
 describe('Container Builder', () => {
-  require('./containerized-builder');
+  importTest('./containerized-builder/image-provider/image-registry');
+  importTest('./containerized-builder/image-provider/image-builder');
+  importTest('./containerized-builder/image-provider/image-provider');
+  importTest('./containerized-builder');
 });
 
 describe('Commands', () => {
-  require('./commands/help');
-  require('./commands/configure');
-  require('./commands/build');
-  require('./commands/containerized-build');
+  importTest('./commands/help');
+  importTest('./commands/configure');
+  importTest('./commands/build');
+  importTest('./commands/containerized-build');
 });
