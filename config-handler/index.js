@@ -52,7 +52,7 @@ class ConfigurationHandler {
     this._validate();
   }
   _validate() {
-    _.each(['paths.output', 'paths.sandbox', 'compilation.prefix'], key => {
+    _.each(['paths.output', 'paths.recipes', 'paths.sandbox', 'compilation.prefix'], key => {
       if (_.isEmpty(this.get(key))) {
         throw new Error(`You should configure the value of ${key} in the configuration file`);
       }

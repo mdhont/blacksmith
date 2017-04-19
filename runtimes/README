@@ -1,0 +1,7 @@
+You have to provide a list of runtimes to use.
+
+The default runtime will be 'runtimes/node', but it can be overwritten using the --runtime flag.
+
+For example, executing:
+
+blacksmith --runtime runtimes/alpine/node build --flavor alpine zlib
