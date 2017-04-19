@@ -5,7 +5,6 @@ const ContainerizedBuilder = require('../../lib/containerized-builder');
 const nfile = require('nami-utils').file;
 const _ = require('nami-utils/lodash-extra');
 const dockerUtils = require('docker-utils');
-const utilities = require('../../lib/containerized-builder/utilities');
 const utils = require('common-utils');
 
 module.exports = [{
@@ -30,9 +29,7 @@ module.exports = [{
         _.assign({logger: parser.blacksmith.logger}, opts));
       const availableImages = parser.configHandler.get('containerizedBuild.images');
       if (_.isEmpty(availableImages)) throw new Error(`Not found any available image in the configuration`);
-      const imageId = opts.imageId ||
-        utilities.getImage(availableImages, buildData.platform);
-      containerizedBuilder.build(buildData, imageId, opts);
+      containerizedBuilder.build(buildData, availableImages, opts);
     }
     return callback;
   },
@@ -64,8 +61,8 @@ module.exports = [{
       });
       const buildData = utils.parseJSONFile(nfile.join(this.arguments['build-dir'], 'config/containerized-build.json'));
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith, opts);
-      const availableImages = parser.blacksmith.config.get('containerizedBuild.images');
-      const imageId = opts.imageId || utilities.getImage(availableImages);
+      const previousConfig = utils.parseJSONFile(nfile.join(this.arguments['build-dir'], 'config/config.json'));
+      const imageId = previousConfig.containerizedBuild.images[0].id;
       if (_.isEmpty(imageId)) throw new Error('Not found the image description in the previous build');
       containerizedBuilder.dockerShell(this.arguments['build-dir'], imageId, _.assign({buildData}, opts));
     }

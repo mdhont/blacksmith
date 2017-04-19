@@ -26,21 +26,17 @@ function createTestEnv(conf) {
       'output': testDir
     },
     'componentTypeCollections': [],
-    'metadataServer': {
-      'activate': false,
-      'prioritize': false,
-      'endPoint': null
-    },
     'containerizedBuild': {
       'images': [
         {
-          'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r1',
+          'id': 'test-image',
           'platform': {
             'os': 'linux',
             'arch': 'x64',
             'distro': 'debian',
             'version': '8'
-          }
+          },
+          'buildTools': []
         }
       ]
     }

@@ -10,13 +10,30 @@
   "plugins": [],
   "containerizedBuild": {
     "images": [{
-      "id": "gcr.io/bitnami-containers/bitnami-base-buildpack:r1",
+      "id": "gcr.io/bitnami-containers/bitnami-base-buildpack:r2",
       "platform": {
         "os": "linux",
         "arch": "x64",
         "distro": "debian",
         "version": "8"
-      }
+      },
+      "buildTools": [
+        {"id": "git", "type": "system"},
+        {"id": "build-essential", "type": "system"},
+        {"id": "pkg-config", "type": "system"},
+        {"id": "cmake", "type": "system"},
+        {"id": "clang", "type": "system"},
+        {"id": "ninja-build", "type": "system"},
+        {"id": "libncurses5-dev", "type": "system"},
+        {"id": "automake", "type": "system"},
+        {"id": "m4", "type": "system"},
+        {"id": "groff", "type": "system"},
+        {"id": "gperf", "type": "system"},
+        {"id": "zip", "type": "system"},
+        {"id": "file", "type": "system"},
+        {"id": "rsync", "type": "system"},
+        {"id": "libtool", "type": "system"}
+      ]
     }]
   }
 }

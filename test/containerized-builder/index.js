@@ -1,24 +1,42 @@
 'use strict';
 
-const helpers = require('../helpers');
+const _ = require('lodash');
+const bsmock = require('./helpers/blacksmith-mock');
 const ContainerizedBuilder = require('../../lib/containerized-builder');
 const chai = require('chai');
+const expect = chai.expect;
+const fs = require('fs');
+const helpers = require('../helpers');
+const ImageRegistry = require('../../lib/containerized-builder/image-provider/image-registry');
+const path = require('path');
+const sinon = require('sinon');
 const spawnSync = require('child_process').spawnSync;
 const spawn = require('child_process').spawn;
-const bsmock = require('./helpers/blacksmith-mock');
-const fs = require('fs');
-const path = require('path');
-const expect = chai.expect;
 
-describe('Containerized Builder', function() {
+
+require('./image-provider/image-registry');
+require('./image-provider/image-builder');
+require('./image-provider/image-provider');
+describe('ContainerizedBuilder', function() {
   this.timeout(30000);
-  beforeEach('prepare environment', () => {
+  beforeEach(() => {
+    helpers.cleanTestEnv();
+    sinon.stub(ImageRegistry.prototype, 'add').callsFake(() => true);
+    sinon.stub(ImageRegistry.prototype, 'remove').callsFake(() => true);
+    sinon.stub(ImageRegistry.prototype, 'getImage').callsFake((reqs) => {
+      if (_.isEmpty(reqs)) {
+        return bsmock.baseImage.id;
+      } else {
+        return null;
+      }
+    });
+  });
+  afterEach(() => {
+    ImageRegistry.prototype.add.restore();
+    ImageRegistry.prototype.remove.restore();
+    ImageRegistry.prototype.getImage.restore();
     helpers.cleanTestEnv();
   });
-  afterEach('clean environment', () => {
-    helpers.cleanTestEnv();
-  });
-  require('./utilities');
   it('creates an instance successfully', () => {
     const cb = new ContainerizedBuilder(bsmock.getBlacksmithInstance());
     expect(cb.logger).to.not.be.empty; // eslint-disable-line no-unused-expressions
@@ -35,8 +53,8 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      bsmock.baseImage,
+      component.buildSpec,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         exitOnEnd: false
@@ -57,7 +75,7 @@ describe('Containerized Builder', function() {
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
       component.buildSpec,
-      bsmock.baseImage,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         forceRebuild: false,
@@ -77,22 +95,18 @@ describe('Containerized Builder', function() {
       logging: {logFile: '/tmp/logs/build.log'},
       paths: {
         output: '/opt/blacksmith/output',
-        logs: '/tmp/logs',
         sandbox: test.sandbox,
       },
       compilation: {prefix: test.prefix},
-      metadataServer: config.metadataServer,
       containerizedBuild: {
-        images: [{id: bsmock.baseImage}]
+        images: [{id: bsmock.baseImage.id}]
       }
     };
     expect(configRes).to.be.eql(desiredConf);
     const buildSpec = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     expect(buildSpec.components).to.be.eql([{
-      'extraFiles': [],
       'id': component.id,
       'version': component.version,
-      'patches': [],
       'recipeLogicPath': `/tmp/recipes/${component.id}/index.js`,
       'metadata': component.buildSpec.components[0].metadata,
       'source': {
@@ -110,8 +124,8 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     expect(() => cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      bsmock.baseImage,
+      component.buildSpec,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         forceRebuild: true,
@@ -146,8 +160,9 @@ describe('Containerized Builder', function() {
         },
         patches: [{path: path.join(test.buildDir, 'test.patch'), sha256: '1234'}],
         extraFiles: [{path: path.join(test.buildDir, 'test.extra'), sha256: '1234'}]
-      }]
-    }, bsmock.baseImage, {
+      }],
+      platform: {os: 'linux', distro: 'debian'}
+    }, [bsmock.baseImage], {
       buildDir: test.buildDir,
       exitOnEnd: false
     });
@@ -164,7 +179,7 @@ describe('Containerized Builder', function() {
         'id': component.id,
         'version': component.version
       }
-    ]};
+    ], platform: {os: 'linux', distro: 'debian'}};
     expect(result).to.be.eql(desiredResult);
   });
 

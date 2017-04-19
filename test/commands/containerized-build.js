@@ -101,8 +101,6 @@ describe('#containerized-build()', function() {
     const component2 = helpers.createComponent(test, {
       id: 'sample2',
     });
-    component.buildSpec.components = component.buildSpec.components.concat(component2.buildSpec.components);
-    fs.writeFileSync(component.buildSpecFile, JSON.stringify(component.buildSpec));
     const result = blacksmithHandler.javascriptExec(
       test.configFile,
       `containerized-build --build-dir ${test.buildDir} ` +
@@ -114,6 +112,8 @@ describe('#containerized-build()', function() {
       `stderr:\n` +
       `${result.stderr}`
     );
+    component.buildSpec.components = component.buildSpec.components.concat(component2.buildSpec.components);
+    fs.writeFileSync(component.buildSpecFile, JSON.stringify(component.buildSpec));
     const continueBuildRes = blacksmithHandler.javascriptExec(
       test.configFile,
       '--log-level trace ' +
