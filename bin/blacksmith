@@ -17,5 +17,7 @@ if [ "$1" = "--runtime" ]; then
 else
     NODE_RUNTIME=$ROOTDIR/runtimes/node
 fi
+# We need to have the blacksmith path in the NODE_PATH
+export NODE_PATH=$NODE_PATH:`dirname $ROOTDIR`
 
 $NODE_RUNTIME $ROOTDIR/index.js "$@"

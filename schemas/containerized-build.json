@@ -2,12 +2,12 @@
   "id": "containerized-build",
   "type": "object",
   "additionalProperties": false,
-  "required": ["components"],
+  "required": ["platform", "components"],
   "properties": {
-    "imageID": {"type": "string"},
     "platform": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["os", "arch", "distro", "version"],
       "properties": {
         "os": {"type": "string"},
         "arch": {"type": "string"},
