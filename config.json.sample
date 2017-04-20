@@ -10,7 +10,7 @@
   "plugins": [],
   "containerizedBuild": {
     "images": [{
-      "id": "gcr.io/bitnami-containers/bitnami-base-buildpack:r2",
+      "id": "gcr.io/bitnami-containers/bitnami-base-buildpack:r3",
       "platform": {
         "os": "linux",
         "arch": "x64",
@@ -32,7 +32,8 @@
         {"id": "zip", "type": "system"},
         {"id": "file", "type": "system"},
         {"id": "rsync", "type": "system"},
-        {"id": "libtool", "type": "system"}
+        {"id": "libtool", "type": "system"},
+        {"id": "unzip", "type": "system"}
       ]
     }]
   }
