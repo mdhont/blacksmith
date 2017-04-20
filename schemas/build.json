@@ -2,7 +2,7 @@
   "id": "build",
   "type": "object",
   "additionalProperties": false,
-  "required": ["platform", "components"],
+  "required": ["components"],
   "properties": {
     "platform": {
       "type": "object",
