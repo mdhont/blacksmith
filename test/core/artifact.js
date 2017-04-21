@@ -18,7 +18,7 @@ describe('Artifact', () => {
         path: 'compiled-test.tar.gz',
         sha256: 'testsha256'
       },
-      systemRuntimePackages: ['libc6']
+      systemRuntimeDependencies: ['libc6']
     };
     const result = {
       metadata: {id: 'component', version: '1.0.0'},
@@ -31,7 +31,7 @@ describe('Artifact', () => {
         path: 'compiled-test.tar.gz',
         sha256: 'testsha256'
       },
-      systemRuntimePackages: ['libc6']
+      systemRuntimeDependencies: ['libc6']
     };
     const artifact = new Artifact(inputObject);
     _.each(result, (v, k) => expect(artifact[k]).to.be.eql(v));

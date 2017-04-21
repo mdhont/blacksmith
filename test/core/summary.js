@@ -80,7 +80,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      systemRuntimePackages: [],
+      systemRuntimeDependencies: [],
     };
     summary.addArtifact(component);
     const artifact = summary.artifacts[0];
@@ -105,7 +105,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      systemRuntimePackages: ['libc6'],
+      systemRuntimeDependencies: ['libc6'],
     };
     sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => ['libc6']);
     try {
@@ -309,7 +309,7 @@ describe('Summary', () => {
         'tarball': 'test.tar.gz',
         'sha256': '1234'
       },
-      'systemRuntimePackages': [],
+      'systemRuntimeDependencies': [],
     };
     sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
     let obtainedResult = null;
@@ -350,7 +350,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      systemRuntimePackages: ['libc1']
+      systemRuntimeDependencies: ['libc1']
     };
     const component2 = {
       metadata: {id: 'component2', version: '1.0.0'},
@@ -359,7 +359,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      systemRuntimePackages: ['libc2']
+      systemRuntimeDependencies: ['libc2']
     };
     let cont = 1;
     sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => [`libc${cont++}`, `libc${cont}`]);
@@ -377,7 +377,7 @@ describe('Summary', () => {
       'prefix': test.prefix,
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
-      'systemRuntimePackages': ['libc1', 'libc2', 'libc3'],
+      'systemRuntimeDependencies': ['libc1', 'libc2', 'libc3'],
       'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
     sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
