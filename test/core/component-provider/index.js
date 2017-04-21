@@ -60,6 +60,13 @@ describe('Component Provider', () => {
       expect(componentObj[k]).to.be.eql(v);
     });
   });
+  it('returns a component with non semver version', () => {
+    const test = helpers.createTestEnv();
+    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
+    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const component = helpers.createComponent(test, {version: '1.0.0rc1'});
+    expect(cp.getComponent(component.buildSpec.components[0], {version: '~1'}).version).to.be.eql('1.0.0rc1');
+  });
   it('throws an error if no version satisfying the requirements is found', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
