@@ -80,7 +80,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      runtimePackages: [],
+      systemRuntimePackages: [],
     };
     summary.addArtifact(component);
     const artifact = summary.artifacts[0];
@@ -105,7 +105,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      runtimePackages: ['libc6'],
+      systemRuntimePackages: ['libc6'],
     };
     sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => ['libc6']);
     try {
@@ -295,7 +295,8 @@ describe('Summary', () => {
       'buildTime': 0,
       'prefix': test.prefix,
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
-      'builtOn': new RegExp(`${new Date().getFullYear()}-.*`)
+      'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
+      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
     const expectedArtifact = {
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
@@ -308,8 +309,7 @@ describe('Summary', () => {
         'tarball': 'test.tar.gz',
         'sha256': '1234'
       },
-      'runtimePackages': [],
-      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
+      'systemRuntimePackages': [],
     };
     sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
     let obtainedResult = null;
@@ -323,7 +323,7 @@ describe('Summary', () => {
     const check = function(toCheck, valid) {
       _.each(valid, (v, k) => {
         if (_.isObject(v) && !_.isRegExp(v)) {
-          expect(toCheck[k]).to.be.eql(v);
+          expect(toCheck[k]).to.be.eql(v, `wrong ${k}`);
         } else {
           expect(!!toCheck[k].toString().match(v), 'Malformed JSON').to.be.eql(true);
         }
@@ -350,7 +350,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      runtimePackages: ['libc1']
+      systemRuntimePackages: ['libc1']
     };
     const component2 = {
       metadata: {id: 'component2', version: '1.0.0'},
@@ -359,7 +359,7 @@ describe('Summary', () => {
         tarball: 'test.tar.gz',
         sha256: '1234'
       },
-      runtimePackages: ['libc2']
+      systemRuntimePackages: ['libc2']
     };
     let cont = 1;
     sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => [`libc${cont++}`, `libc${cont}`]);
@@ -377,7 +377,7 @@ describe('Summary', () => {
       'prefix': test.prefix,
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
-      'runtimePackages': ['libc1', 'libc2', 'libc3'],
+      'systemRuntimePackages': ['libc1', 'libc2', 'libc3'],
       'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
     sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
