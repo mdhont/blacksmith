@@ -55,7 +55,7 @@ describe('Component List', () => {
   it('creates an instance successfully', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -95,7 +95,7 @@ describe('Component List', () => {
   it('changes abortOnError', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -114,7 +114,7 @@ describe('Component List', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -131,7 +131,7 @@ describe('Component List', () => {
   it('disables initialization', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -148,7 +148,7 @@ describe('Component List', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -164,7 +164,7 @@ describe('Component List', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -189,7 +189,7 @@ describe('Component List', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -206,7 +206,7 @@ describe('Component List', () => {
     const component1 = helpers.createComponent(test);
     const component2 = helpers.createComponent(test, {id: 'sample2'});
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -226,7 +226,7 @@ describe('Component List', () => {
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -243,7 +243,7 @@ describe('Component List', () => {
     const component1 = helpers.createComponent(test);
     const component2 = helpers.createComponent(test, {id: 'sample2'});
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
@@ -259,7 +259,7 @@ describe('Component List', () => {
     const component1 = helpers.createComponent(test);
     const component2 = helpers.createComponent(test, {id: 'sample2'});
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider([test.componentDir], config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const be = new BuildEnvironment({
       outputDir: test.buildDir,
       prefixDir: test.prefix,
