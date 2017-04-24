@@ -68,6 +68,15 @@ describe('FSTracker', () => {
     fstracker.captureDelta(tarball, {all: true});
     expect(spawnSync('tar', ['-ztf', tarball]).stdout.toString()).to.contain('hello');
   });
+  it('captures empty folders', () => {
+    const fstracker = new FileSystemTracker(testDir);
+    fstracker.init();
+    fs.mkdirSync(path.join(testDir, 'hello_dir'));
+    fstracker.commit();
+    const tarball = '/tmp/blacksmith-test-env/delta.tar.gz';
+    fstracker.captureDelta(tarball, {all: true});
+    expect(spawnSync('tar', ['-ztf', tarball]).stdout.toString()).to.contain('hello_dir');
+  });
   it('calls for compression using just the directory paths', () => {
     const fstracker = new FileSystemTracker(testDir);
     fstracker.init();
