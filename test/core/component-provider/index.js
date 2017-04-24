@@ -102,4 +102,50 @@ describe('Component Provider', () => {
       'Cannot find any valid specification matching the provided requirements'
     );
   });
+  it('obtains a component that has a custom component type', () => {
+    const test = helpers.createTestEnv();
+    const componentType = `class CustomComponent {}
+      module.exports = CustomComponent`;
+    const componentTypeFile = path.join(test.buildDir, 'component.js');
+    fs.writeFileSync(componentTypeFile, componentType);
+    // Delete require cache for the new file in case it has been already used
+    delete require.cache[require.resolve(componentTypeFile)];
+    const cp = new ComponentProvider(componentTypeFile);
+    const component = helpers.createComponent(test);
+    fs.writeFileSync(component.recipeLogicPath, `class MyComponent extends CustomComponent {}
+      module.exports = MyComponent`);
+    const componentObj = cp.getComponent(component.buildSpec.components[0]);
+    expect(componentObj.constructor.name).to.be.eql('MyComponent');
+  });
+  it('obtains a component that has a custom component type exposed as an object', () => {
+    const test = helpers.createTestEnv();
+    const componentType = `class CustomComponent1 {}
+    class CustomComponent2 {}
+      module.exports = {CustomComponent1: CustomComponent1, CustomComponent2: CustomComponent2}`;
+    const componentTypeFile = path.join(test.buildDir, 'component.js');
+    fs.writeFileSync(componentTypeFile, componentType);
+    // Delete require cache for the new file in case it has been already used
+    delete require.cache[require.resolve(componentTypeFile)];
+    const cp = new ComponentProvider(componentTypeFile);
+    const component = helpers.createComponent(test);
+    fs.writeFileSync(component.recipeLogicPath, `class MyComponent extends CustomComponent1 {}
+      module.exports = MyComponent`);
+    const componentObj = cp.getComponent(component.buildSpec.components[0]);
+    expect(componentObj.constructor.name).to.be.eql('MyComponent');
+  });
+  it('obtains a component that has a custom component type exposed as an alias', () => {
+    const test = helpers.createTestEnv();
+    const componentType = `class CustomComponent {}
+      module.exports = {CustomComponent: CustomComponent, CustomComponent1: CustomComponent}`;
+    const componentTypeFile = path.join(test.buildDir, 'component.js');
+    fs.writeFileSync(componentTypeFile, componentType);
+    // Delete require cache for the new file in case it has been already used
+    delete require.cache[require.resolve(componentTypeFile)];
+    const cp = new ComponentProvider(componentTypeFile);
+    const component = helpers.createComponent(test);
+    fs.writeFileSync(component.recipeLogicPath, `class MyComponent extends CustomComponent1 {}
+      module.exports = MyComponent`);
+    const componentObj = cp.getComponent(component.buildSpec.components[0]);
+    expect(componentObj.constructor.name).to.be.eql('MyComponent');
+  });
 });
