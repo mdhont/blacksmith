@@ -16,24 +16,10 @@ describe('Component Provider', () => {
   afterEach('clean environment', () => {
     helpers.cleanTestEnv();
   });
-  it('creates an instance successfully', () => {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'), {
-      logger: helpers.getDummyLogger()
-    });
-    const testCP = {
-      recipeDirectories: [test.componentDir],
-      logger: helpers.getDummyLogger(),
-    };
-    _.each(testCP, (v, k) => expect(cp[k]).to.be.eql(v));
-    expect(cp.logicProvider).to.be.a('Object');
-  });
-
   it('obtains a component', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const component = helpers.createComponent(test);
     const componentObj = cp.getComponent(component.buildSpec.components[0]);
     const desiredComponent = {
@@ -63,14 +49,14 @@ describe('Component Provider', () => {
   it('returns a component with non semver version', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const component = helpers.createComponent(test, {version: '1.0.0rc1'});
     expect(cp.getComponent(component.buildSpec.components[0], {version: '~1'}).version).to.be.eql('1.0.0rc1');
   });
   it('throws an error if no version satisfying the requirements is found', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const component = helpers.createComponent(test);
     const simplifiedComponent = {
       id: component.id, version: component.version
@@ -82,15 +68,17 @@ describe('Component Provider', () => {
   it('obtains a component class based on requirements', () => {
     const test = helpers.createTestEnv();
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const cp = new ComponentProvider(test.componentDir, config.get('componentTypeCollections'));
+    const cp = new ComponentProvider(config.get('componentTypeCollections'));
     const component = helpers.createComponent(test, {id: 'sample'});
     fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
       'use strict';
       class sample1 extends Library {}
       class sample2 extends Library {}
+      class subSample extends sample2 {}
       module.exports = [
-        {version: '<2.0', platforms: ['linux'], class: sample1},
-        {version: '>=2.0', platforms: ['linux-x64'], class: sample2}
+        {id: '${component.id}', version: '<2.0', platforms: ['linux'], class: sample1},
+        {id: '${component.id}', version: '>=2.0', platforms: ['linux-x64'], class: sample2},
+        {id: 'sub-sample', version: '>=2.0', platforms: ['linux-x64'], class: subSample},
       ];`
     );
     const componentTest = _.assign({}, component.buildSpec.components[0], {version: '1.0.0'});
@@ -103,6 +91,11 @@ describe('Component Provider', () => {
       cp.getComponent(componentTest).constructor.name,
       'Bad class resolution'
     ).to.be.eql('sample2');
+    componentTest.id = 'sub-sample';
+    expect(
+      cp.getComponent(componentTest).constructor.name,
+      'Bad class resolution'
+    ).to.be.eql('subSample');
     expect(() => cp.getComponent(componentTest, {platform: 'linux'}),
       'Bad class resolution'
     ).to.throw(

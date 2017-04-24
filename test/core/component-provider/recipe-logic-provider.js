@@ -20,7 +20,7 @@ describe('RecipeLogicProvider', function() {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
 
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    const recipeLogicProvider = new RecipeLogicProvider(config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.getRecipeClass(component.recipeLogicPath);
 
     expect(buildInstructions).to.be.a('Function');
@@ -33,7 +33,7 @@ describe('RecipeLogicProvider', function() {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
 
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    const recipeLogicProvider = new RecipeLogicProvider(config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.getRecipeClass(component.recipeLogicPath);
 
     const recipeText = fs.readFileSync(path.join(test.componentDir, `${component.id}/index.js`), {encoding: 'utf8'});
@@ -45,7 +45,7 @@ describe('RecipeLogicProvider', function() {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
 
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    const recipeLogicProvider = new RecipeLogicProvider(config.get('componentTypeCollections'));
     fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
     'use strict';
     class Test1 extends Component{}
@@ -71,7 +71,7 @@ describe('RecipeLogicProvider', function() {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
 
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    const recipeLogicProvider = new RecipeLogicProvider(config.get('componentTypeCollections'));
     fs.writeFileSync(path.join(test.componentDir, `${component.id}/index.js`), `
     'use strict';
     class Test1 extends Component{}
@@ -102,33 +102,9 @@ describe('RecipeLogicProvider', function() {
     const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
     const component = helpers.createComponent(test);
 
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
+    const recipeLogicProvider = new RecipeLogicProvider(config.get('componentTypeCollections'));
     const buildInstructions = recipeLogicProvider.loadBuildInstructions(component.recipeLogicPath);
 
     expect(buildInstructions).to.be.a('Function');
-  });
-  it('exposes global functionalities for build instructions', function() {
-    const test = helpers.createTestEnv();
-    const config = new DummyConfigHandler(JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'})));
-    const component = helpers.createComponent(test);
-    const component2 = helpers.createComponent(test, {id: 'component2'});
-
-    const recipeLogicProvider = new RecipeLogicProvider([test.componentDir], config.get('componentTypeCollections'));
-    fs.writeFileSync(component2.recipeLogicPath, `
-    'use strict';
-    const PreviousComponent = $loadBuildInstructions('${component.recipeLogicPath}')
-    class Test extends PreviousComponent{
-      initialize() {
-        const modulesToLoad = [_, path, $bu, $os, $file, $util];
-        modulesToLoad.forEach(mod => {
-          if (typeof mod === 'undefined') throw new Error('Failed to load module');
-        });
-      }
-    }
-    module.exports = Test;`);
-    const Test = recipeLogicProvider.getRecipeClass(component2.recipeLogicPath);
-    const componentInstance = new Test();
-
-    expect(componentInstance.initialize).to.not.throw();
   });
 });
