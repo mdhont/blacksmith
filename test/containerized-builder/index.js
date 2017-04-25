@@ -179,6 +179,28 @@ describe('ContainerizedBuilder', function() {
     expect(result).to.be.eql(desiredResult);
   });
 
+  it('skips the tarball of a component if it is not defined', () => {
+    const log = {};
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test);
+    const blacksmithTool = bsmock.createDummyBlacksmith(test);
+    const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
+    config.paths.rootDir = blacksmithTool;
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
+    const cb = new ContainerizedBuilder(blacksmithInstance);
+    component.buildSpec.components[0].source = {};
+    cb.build(
+      component.buildSpec,
+      [bsmock.baseImage],
+      {
+        buildDir: test.buildDir,
+        exitOnEnd: false
+      }
+    );
+    expect(log.text).to.contain('Skipping sample1 tarball since it is not defined');
+    expect(log.text).to.contain('Command successfully executed');
+  });
+
   it('opens a shell', () => {
     const previousENV = Object.assign({}, process.env);
     process.env.NO_TTY = 1;
