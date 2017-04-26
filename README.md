@@ -5,11 +5,10 @@
 Blacksmith is a command line tool based on NodeJS designed to build third-party software and its dependencies on a Unix platform.
 
   * Compile a list of software components in a specific order.
-  * Compile software components in an isolated environment using Docker images.
-  * Customise the compilation logic to modify the default behaviour. E.g. customize the arguments to pass to the `configure` command.
+  * Generate a Docker Image to compile components in an isolated environment.
+  * Customize the compilation logic to modify the default behavior. E.g. customize the arguments to pass to the `configure` command.
 
 >NOTE: Please note this library is currently under active development. Any major release is subject to backwards incompatible changes.
-
 
 ## Installation
 
@@ -34,7 +33,7 @@ $ blacksmith [<global-options> | <command> [<command-options> [<command-argument
 ```
 
   * \<global-options>: Global Blacksmith options that are not specific to any particular sub-command.
-  * \<command>: Command to execute: `configure`, `inspect`, `build`, `containerized-build`, `shell`
+  * \<command>: Command to execute: `configure`, `build`, `containerized-build`, `shell`
   * \<command-options>: Options related to the command being executed.
   * \<command-arguments>: Command-specific arguments.
 
@@ -45,29 +44,41 @@ To get more information about a command, you can execute:
 This example demonstrates how to compile the 'zlib' library with Blacksmith. We would need:
 
   * The source code of `zlib`. It can be found at the [zlib official page's download section](http://www.zlib.net/)
-  * A folder where to store the build instructions:
-    * A `metadata.json` file for `zlib` component
-    * A `index.js` file defining the compilation instructions for `zlib`
+  * A JSON file that should contain:
+    * [Optional] The platform you want to build the components for.
+    * The list of components that you want to build. Each component should define:
+      * Component ID and version
+      * [Optional] Additional metadata of the component
+      * The path to the tarball with the source code
+      * The path to a JavaScript file defining the compilation instructions for `zlib`
 
->NOTE: This example will assume you have the source tarballs in `/tmp/tarballs` and the recipes in `/tmp/blacksmith-recipes/<component>/`
-
-
-#### metadata.json
-```
+#### /home/blacksmith/zlib.json
+```json
 {
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
+  "components": [
     {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
+      "id": "zlib",
+      "version": "1.2.11",
+      "metadata": {
+        "licenses": [
+          {
+            "type": "ZLIB",
+            "licenseRelativePath": "README",
+            "main": true
+          }
+        ]        
+      },
+      "recipeLogicPath": "/home/blacksmith/zlib.js",
+      "source": {
+        "tarball": "/home/blacksmith/zlib-1.2.11.tar.gz",
+        "sha256": "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
+      }
+    }  
   ]
 }
 ```
 
-#### index.js
+#### /home/blacksmith/zlib.js
 ```
 'use strict';
 
@@ -77,7 +88,7 @@ class Zlib extends Library {
   }
 }
 
-module.exports = Zlib;
+module.exports = zlib;
 ```
 
 #### Compilation action
@@ -85,17 +96,15 @@ module.exports = Zlib;
 Configure the Blacksmith default paths to the recipe, if not already configured in `config.json`, and then call the actual compilation command:
 
 ```
-$> blacksmith configure paths.recipes /tmp/blacksmith-recipes/
-$> blacksmith containerized-build zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
+$> blacksmith containerized-build /home/blacksmith/zlib.json
 blacksm INFO  Preparing build environment
 [...]
 blacksm INFO  Running build inside docker image <image_id>
 [...]
-blacksm INFO  Command successfully executed. Find its results under /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard
-blacksm INFO  logs: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/logs
-blacksm INFO  artifacts: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/artifacts
-blacksm INFO  config: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/config
-Blacksmith generated the tarball with the component compiled in the artifacts folder.
+blacksm INFO  Command successfully executed. Find its results under /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack
+blacksm INFO  logs: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/logs
+blacksm INFO  artifacts: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/artifacts
+blacksm INFO  config: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/config
 ```
 
 Find more information about Blacksmith features in the [Blacksmith user guide](./docs/Blacksmith.md).

@@ -23,24 +23,29 @@ Blacksmith will read its configuration options from the `config.json` file locat
 
 The configuration can be modified directly editing the file or using the command `blacksmith configure` that is explained below.
 
-Those configuration options can be overriden anytime using the command line by passing options to the `blacksmith` command you are executing.
+Those configuration options can be modified anytime using the command line by passing options to the `blacksmith` command you are executing.
 
 ## Useful configuration options
 ### compilation.prefix
 This option sets the prefix that will be used for the compilation. Every component will be compiled using that prefix.
 
-### paths.recipes
-This option sets the path to the recipes directory.
-
 ### paths.output
 This option sets the path where Blacksmith will leave the output files and artifacts from the compilation.
 
+### paths.sandbox
+This option sets the path where Blacksmith will use for placing source files and compile them.
+
 ### plugins
 This option sets the plugins that will extend Blacksmith functionality in the form of new commands.
-By default you will have `blacksmith-containerized-build-command` plugin enabled. It will allow you to build your component(s) inside an isolated Docker container.
 
-### containerizedBuild.defaultImage
-This option is only available when using the `blacksmith-containerized-build-command` plugin and lets you configure the base image that will be used to build the component(s).
+### componentTypeCollections
+This option sets the a list of NPM modules that can define one or more Component Types. Those component types allows you to define new types that are not include in the core of Blacksmith. Check the COMPONENT_TYPES Section for more information about the different component types available.
+
+### baseImages
+This option is only used when calling the `containerized-build` command. It allows you to define the base images that blacksmith will use to build the component(s). Each base image should define:
+ * ID: Docker image name (including tag)
+ * Platform: Platform of the base image including OS, architecture and the name and version of the distribution.
+ * Build Tools: List of (system) packages available in the base image.
 
 # Basic commands
 
@@ -58,18 +63,17 @@ $> blacksmith [<global-options> | <command> [<command-options> [<command-argumen
 Let's see the different parts in a real command:
 
 ```bash
-$> blacksmith --log-level=trace build --json=php.json php@~7
+$> blacksmith --log-level=trace build --build-dir=/tmp /tmp/php.json
 ```
 
 In the above example, the different parts would be:
 
-* `<global-options>`: `--log-level=trace`: setting the verbosity of the log output to the `trace` level.
-* `<command>`: `build`: sub-command used to build packages.
-* `<command-options>`: `--json=php.json`: provides the JSON file with the components that you want to build, in order.
-* `<command-arguments>`: `php@~7`: the component you want to build. in addition to the components from the `--json` option.
+* `<global-options>`: `--log-level=trace`: Setting the verbosity of the tool log to the `trace` level.
+* `<command>`: `build`: Sub-command used to build packages.
+* `<command-options>`: `--build-dir=/tmp`: Option affecting to the sub-command. In this case it provides the path that blacksmith should use as build directory to place its output files.
+* `<command-arguments>`: `/tmp/php.json`: Path to the build specification.
 
 Although we will be providing a detailed explanation of the most important commands, you can always get a quick summary of them using the help menu:
-
 
 ```
 $> blacksmith --help
@@ -79,7 +83,7 @@ Usage: blacksmith <options> <command>
 
  where <options> include:
 ...
-And <command> is one of: configure, inspect, build, containerized-build, shell
+And <command> is one of: configure, build, containerized-build, shell
 
 To get more information about a command, you can execute:
 
@@ -102,79 +106,41 @@ Example:
 $> blacksmith configure paths.output /tmp/blacksmith-output
 ```
 
-
-## inspect
-
-Provide information about a component or a list of components based on a recipe or a tarball:
-
-```
-$> blacksmith inspect <options> <package[@version]:/path/to/tarball>
-```
-
-Example:
-
-```
-$> bs inspect zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
-{
-    "platform": {
-       "os": "linux",
-       "arch": "x64"
-    },
-    "components": [
-        {
-            "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz",
-            "patches": [],
-            "extraFiles": [],
-            "id": "zlib",
-            "version": "1.2.8"
-        }
-    ]
-}
-```
-
-The result is returned in JSON format so it is easily parseable by external tools.
-
 ## build
 
 Build a component or a list of components in your system.
 
 ```
-$> blacksmith build <options> <package[@version]:/path/to/tarball>
+$> blacksmith build [options] </path/to/build-spec.json>
 ```
 
 Example:
 
 ```
-$> blacksmith build zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
+$> blacksmith build /tmp/zlib.json
 ```
 
-The result is a tarball that contains the component already built from its source tarball.
+The result is a tarball that contains the component already built from its source tarball and a summary of the build.
 
 ## containerized-build
 
 Build a component or a list of components inside a Docker container.
 
->NOTE: This command is only available if the plugin `blacksmith-containerized-build-command` is enabled in `config.json`.
-
 ```
-$> blacksmith containerized-build <options> <package[@version]:/path/to/tarball>
+$> blacksmith containerized-build <options> </path/to/build-spec.json>
 ```
 
 Example:
 
 ```
-$> blacksmith containerized-build zlib@1.2.8:/tmp/tarballs/zlib-1.2.8.tar.gz
+$> blacksmith containerized-build /tmp/zlib.json
 ```
 
-Aditionally, you can choose the container image that will be used to run the container where the compilation will take place with the option `--image-id`.
-
-The result is a tarball that contains the component already built from its source tarball.
+The result is the same than for the `build` command but it will also include all the files required to reproduce the build in another container.
 
 ## shell
 Opens a bash shell inside the container reproducing the build environment to inspect files and debug compilation issues.
-The logs are still available outside the container
-
->NOTE: This command is only available if the plugin `blacksmith-containerized-build-command` is enabled in `config.json`.
+The logs are still available outside the container.
 
 ```
 $> shell <options> <build-dir>
@@ -186,44 +152,59 @@ Example:
 $> blacksmith shell /tmp/blacksmith-output/2016-09-16-145643-php-linux-x64-standard/
 ```
 
-# Compilation recipes
-In order to build a component, Blacksmith needs a JSON file with minimum metadata definitions and the compilation instructions as a JavaScript file.
+# Build specifications
+In order to build a set of components, Blacksmith needs a JSON file with minimum metadata definitions, the path to the tarball with the source code and the compilation instructions as a JavaScript file.
 
-## metadata.json
-The `metadata.json` file should contain at least the following fields:
+## build-spec.json
+The `build-spec.json` file can contain:
 
-  * id
-  * latest
-  * component.name
-  * component.licenses
-  * component.licenses[].type
-  * component.licenses[].relativePath
-
-By default, Blacksmith will look for the source code using the tarball name `<name>-<version>.tar.gz`, but it can be overriden with the `tarballName` property.
+  * [platform] - (Optional) Object defining the target platform. If defined all the properties bellow should be defined as well.
+  * [platform.os] - (Optional) Operative System. Default: 'linux'.
+  * [platform.arch] - (Optional) Architecture of the platform. Default: 'x64'.
+  * [platform.distro] - (Optional) Distribution of the platform. Default: 'debian'.
+  * [platform.version] - (Optional) Distribution version. Default: '8'.
+  * components - Array of components to build. Each component should define:
+  * component.id - ID of the component. For example 'zlib'.
+  * component.version - Version of the component. For example '1.2.11'.
+  * component.recipeLogicPath - Path to the JavaScript file with the compilation logic.
+  * component.source - Object defining the path to the tarball and its checksum.
+  * [component.metadata] - (Optional) Additional metadata of the component
+  * [component.metadata.licenses] - (Optional) Array of licenses of the component. If defined Blacksmith will copy the licenses specified in the resulting artifact.
 
 Example:
 
-```
+```json
 {
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
+  "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
+  "components": [{
+    "id": "zlib",
+    "version": "1.2.11",
+    "recipeLogicPath": "/tmp/zlib.js",
+    "source": {
+      "tarball": "/tmp/zlib-1.2.11.tar.gz",
+      "sha256": "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
+    },
+    "metadata": {
+      "licenses": [{
+        "type": "ZLIB",
+        "licenseRelativePath": "README",
+        "main": true
+      }]
     }
-  ]
+  }]
 }
 ```
 
-## index.js
-In this file we should define a Javascript class, extending from a predefined compilation class, and export it.
-It should extend from one the following classes:
+## zlib.js
 
+In this file we should define a JavaScript class, extending from a predefined compilation class, and export it.
+The available classes as core components are (check the definition of the different types bellow):
+
+  * `Component`
   * `CompiledComponent`
+  * `CompilableComponent`
   * `MakeComponent`
-  * `Library`
+  * `Library` - Interface meant for common libraries. It inherits from `MakeComponent` defining the component prefix to `{{prefix}}/common`.
 
 All the classes will execute the following methods in order (they can be overriden or recalled with `super`):
 
@@ -236,38 +217,43 @@ All the classes will execute the following methods in order (they can be overrid
   * `build` -- Can be overriden. Contain build instructions
   * `postBuild` -- Can be overriden. Common tasks that execute after the build
   * `install` -- Can be overriden. Copy the compiled files to the right directory
-  * `fulfillLicenseRequirements` -- Not need to override. Check that the defined license is available and copy it in the component prefix in order to be included in the resulting tarball
+  * `fulfillLicenseRequirements` -- Not need to override. If the license information is defined it checks if it is available in the source code and copies it in the component prefix in order to be included in the resulting tarball
   * `postInstall` -- Can be overriden. Common tasks that execute after the install
   * `minify` -- Not need to override. Remove unnecesary files or folders and strip binary files generated
 
+### Component
+
+This is a basic interface that defines all the available hooks without any specific behavior.
+
 ### CompiledComponent
 
-By default this class won't execute any additional methods and will have most methods blank as the component does not need to be compiled.
+Interface for components that doesn't require compilation. By default this class will have most methods blank as the component does not need to be compiled. It will just copy the source files to the prefix. Inherits from `Component`.
+
+### CompilableComponent
+
+Generic interface for components that are meant to be compiled. It sets up the environment variables required for compiling and defines the method for minifying the resulting artifacts stripping its binaries. Inherits from `Component`.
 
 ### MakeComponent
-This class will modify the common methods and add compilation logic following this schema:
+
+Interface for components that are compiled using a Makefile. This class will modify the common methods adapting them to the most common hooks of a Makefile. This is the schema of the methods executed:
 
 ```
 build()
-  configure(configureOptions()) -- `configureOptions` is a 'getter' method that should return an array with the arguments that the configure script will use (see the example below)
-    configure Unix command
-  make() -- will call the
-    make Unix command
+  configure() -- Execute the `configure` script of the component setting by default as prefix the generic prefix (setted in the main configuration) + the ID of the component. The options to pass to the `configure` script can be modified redefining the `configureOptions` method (see the section bellow for more details).
+  make() -- Call the `make` Unix command
 install()
-  make(install)
-  make install Unix command
+  make(install) - Call the `make` Unix command with the argument 'install'
 ```
 
 Every method can be overriden or recalled with `super` to set up specific configurations or build commands.
 
-The default prefix path will be `<path.prefix>/<component_id>`.
-
 ### Library
-This class behaves the same as `MakeComponent` but the default prefix path will be `<path.prefix>/common` as libraries would likely share the same prefix.
+
+This class behaves the same as `MakeComponent` but the default prefix path will be `<conf.prefix>/common` as libraries would likely share the same prefix.
 
 ### Example
 
-```
+```js
 'use strict';
 
 class Zlib extends Library {
@@ -276,58 +262,85 @@ class Zlib extends Library {
   }
 }
 
-module.exports = Zlib;
+module.exports = zlib;
 ```
+
+As explained before `zlib` extends from `Library` so it will be a component compiled through a Makefile setting as prefix <conf.prefix>/common`. In this case we modify the `configureOptions` method to include the flag `--shared` when running the `configure` script.
 
 ### configureOptions
-When building several components (dependencies) that are required to compile another one (main component), the main component would need to read the prefix of the built dependencies from the configure flags in order to compile against them. For this situation, `populateFlagsFromDependencies` function would be needed.
 
-It will populate the flags related to the dependencies with info about their prefix or other include directories like `libDir`, `headersDir` or `srcDir`.
+As we mentioned in this guide the method `configureOptions` will be used to define the different options to pass to the configure the component we are compiling. There will be cases in which a component needs to set a configuration option pointing to other component directory. In this situation the method `populateFlagsFromDependencies` become handy. Using this method you can obtain the different paths that other components define. This would be an example:
 
-Example:
-```
+```js
 configureOptions() {
-    const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
-      '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
+    const options = ['--shared'];
     const components = {
-      'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
-        '--with-http_ssl_module', '--with-mail_ssl_module'],
       'zlib': ['--with-zlib={{srcDir}}'],
-      'pcre': ['--with-pcre={{srcDir}}']
+      'pcre': ['--with-pcre={{libDir}}']
     };
-    return _.union(this.componentList.populateFlagsFromDependencies(components), list);
+    return list.concat(this.componentList.populateFlagsFromDependencies(components);
   }
 ```
+
+Assuming that the `srcDir` of the `zlib` component is `/sandbox/zlib` and the `libDir` of `pcre` is `/usr/local/lib` the example above it will return an array with `['--shared', '--with-zlib=/sandbox/zlib', '--with-pcre=/usr/local/lib']`.
+
+Note that any of the defined directories can be used. The available options are 'prefix', 'srcDir', 'libDir', 'binDir', 'headersDir', 'workingDir', 'licenseDir' and 'extraFilesDir'.
+
+## Build dependencies
+
+From Blacksmith 2.0 it is possible to specify build dependencies as part of the compilation recipe to define the build tools or libraries required to compile a component. These dependencies will be gathered and installed in a base image prior to the compilation so all the components can benefit from them.
+
+Note that this feature is only available when running a containerized-build.
+
+To specify a build dependency you will need to specify the getter method `buildDependencies` in the JavaScript recipe. For example:
+
+```js
+get buildDependencies() {
+  return [
+    {
+      id: 'zlib1g-dev',
+      type: 'system',
+      distro: 'debian'
+    },
+    {
+      id: 'go',
+      type: 'go',
+      installCommands: [
+        'curl https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz -o go1.8.1.linux-amd64.tar.gz',
+        'tar -C /usr/local xf go1.8.1.linux-amd64.tar.gz'
+      ],
+      envVars: {
+        PATH: '$PATH:/usr/local/go/bin'
+      }
+    }
+  ]
+}
+```
+
+In this example we are installing two different types of build dependencies: a system package and a custom type.
+
+For system packages we just need to specify the package name and the target distribution. If we are using that recipe in the distribution it sets Blacksmith will automatically handle the installation of the latest package available. Currently the distribution supported to install system packages are Centos and Debian.
+
+In case we want to install something that is not a system package we need to specify the commands and  environment variables (if needed) required for its installation. In the example above we are downloading the binary of GO and adding it to the system PATH.
 
 # Examples
-## Build a single component
-In order to build the `zlib` library with Blacksmith, you would need:
+## Building NGINX compiling its dependencies
+In this example we will build NGINX binaries compiling as well its required dependencies. In this case, the [Nginx webserver](http://nginx.org/) requires `zlib`, `pcre` and `openssl` in order to be built. For more information check the document ["Building nginx from Sources"](http://nginx.org/en/docs/configure.html).
 
-  * The source code of `zlib`. It can be found at the [zlib official page's download section](http://www.zlib.net/)
-  * A folder where to store the build instructions:
-    * A `metadata.json` file for `zlib` component
-    * A `index.js` file defining the compilation instructions for `zlib`
+First we will download the source code of all the components. For downloading the source tarballs of this guide you can run:
 
->NOTE: This example will assume you have the source tarballs in `/tmp/tarballs` and the recipes in `/tmp/blacksmith-recipes/<component>/`
-
->NOTE: The folder name should be the same as the id of the component to be built.
-
-### metadata.json
+```sh
+wget https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz -O /tmp/zlib-1.2.11.tar.gz
+wget https://ftp.pcre.org/pub/pcre/pcre-8.31.tar.gz -O /tmp/pcre-8.31.tar.gz
+wget https://www.openssl.org/source/old/1.0.2/openssl-1.0.2i.tar.gz -O /tmp/openssl-1.0.2i.tar.gz
+wget http://nginx.org/download/nginx-1.13.0.tar.gz -O /tmp/nginx-1.13.0.tar.gz
 ```
-{
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
-}
-```
-### index.js
-```
+
+Now we can write the compilation recipes:
+
+#### zlib compilation recipe
+`/tmp/zlib.js`:
+```js
 'use strict';
 
 class Zlib extends Library {
@@ -336,75 +349,11 @@ class Zlib extends Library {
   }
 }
 
-module.exports = Zlib;
+module.exports = zlib;
 ```
-### Compilation action
-We need to configure the Blacksmith default paths to the recipe and the source tarball (if not already configured in `config.json`) and then call the actual compilation command:
-
-```
-$> blacksmith configure paths.recipes /tmp/blacksmith-recipes/
-$> blacksmith containerized-build zlib:/tmp/tarballs/zlib-1.2.8
-blacksm INFO  Preparing build environment
-[...]
-blacksm INFO  Running build inside docker image <image_id>
-[...]
-blacksm INFO  Command successfully executed. Find its results under /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard
-blacksm INFO  logs: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/logs
-blacksm INFO  artifacts: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/artifacts
-blacksm INFO  config: /tmp/blacksmith-output/2016-09-21-202036-zlib-linux-x64-standard/config
-```
-
-Blacksmith will generate the tarball with the built component in the `artifacts` folder.
-
-## Build a component and its dependencies
-There are components that depend on others to be able to build. For example, the [Nginx webserver](http://nginx.org/) requires `zlib`, `pcre` and `openssl` in order to be built. For more information check the document ["Building nginx from Sources"](http://nginx.org/en/docs/configure.html).
-
-First of all, obtain the source code and the `metadata.json` and `index.js` (recipe) files for every component:
-
-### File descriptions
-
-#### zlib metadata.json
-```
-{
-  "id": "zlib",
-  "latest": "1.2.8",
-  "licenses": [
-    {
-      "type": "ZLIB",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
-}
-```
-#### zlib index.js
-```
-'use strict';
-
-class Zlib extends Library {
-  configureOptions() {
-    return ['--shared'];
-  }
-}
-
-module.exports = Zlib;
-```
-#### pcre metadata.json
-```
-{
-  "id": "pcre",
-  "latest": "8.31",
-  "licenses": [
-    {
-      "type": "BSD3",
-      "licenseRelativePath": "README",
-      "main": true
-    }
-  ]
-}
-```
-#### pcre index.js
-```
+#### PCRE compilation recipe
+`/tmp/pcre.js`:
+```js
 'use strict';
 
 class Pcre extends Library {
@@ -415,22 +364,9 @@ class Pcre extends Library {
 
 module.exports = Pcre;
 ```
-#### openssl metadata.json
-```
-{
-  "id": "openssl",
-  "latest": "1.0.2i",
-  "licenses": [
-    {
-      "type": "OpenSSL",
-      "licenseRelativePath": "LICENSE",
-      "main": true
-    }
-  ]
-}
-```
-#### openssl index.js
-```
+#### OpenSSL compilation recipe
+`/tmp/openssl.js`:
+```js
 'use strict';
 
 class OpenSSL extends Library {
@@ -441,106 +377,199 @@ class OpenSSL extends Library {
     this.supportsParallelBuild = false;
   }
   configure() {
-    $file.substitute(this.srcDir,
-                     '$dir/cacert.pem',
-                     path.join(this.prefix, 'openssl/certs/ca-bundle.crt'),
-                     {recursive: true});
     super.configure();
     this.make('depend');
-  }
-  postInstall() {
-    $file.mkdir(path.join(this.prefix, 'openssl/certs/'));
-    $file.copy(path.join(this.extraFilesDir, 'curl-ca-bundle-20100521.crt'),
-               path.join(this.prefix, 'openssl/certs/ca-bundle.crt'));
   }
 }
 
 module.exports = OpenSSL;
 ```
-#### nginx metadata.json
-```
-{
-  "id": "nginx",
-  "latest": "1.10.1",
-  "licenses": [
-    {
-      "type": "BSD2",
-      "licenseRelativePath": "LICENSE",
-      "main": true
-    }
-  ]
-}
-```
-#### nginx index.js
-```
+
+As we can see the compilation recipe of OpenSSL is a bit more complex:
+ - It uses the `initialize` hook to disable parallel jobs when running `make`.
+ - It modifies the `configure` hook to:
+  - Call configure as in the parent class.
+  - Call `make` again with the argument 'depend'
+
+#### NGINX compilation recipe
+`/tmp/nginx.js`
+```js
 'use strict';
 
 class Nginx extends MakeComponent {
   postExtract() {
     const configureFlags = '--disable-shared --disable-libtool-lock --disable-cpp';
-    $file.substitute(path.join(this.srcDir, 'auto/lib/pcre/make'),
-                     {'./configure --disable-shared': `./configure ${configureFlags}`});
-    $file.substitute(path.join(this.srcDir, 'auto/options'), {'NGX_RPATH=NO': 'NGX_RPATH=YES'});
+    $file.substitute(
+      path.join(this.srcDir, 'auto/lib/pcre/make'),
+      [{pattern: './configure --disable-shared', value: `./configure ${configureFlags}`}]
+    );
+    $file.substitute(
+      path.join(this.srcDir, 'auto/options'),
+      [{pattern: 'NGX_RPATH=NO', value: 'NGX_RPATH=YES'}]
+    );
   }
   configureOptions() {
-    const list = ['--with-http_stub_status_module', '--with-http_gzip_static_module', '--with-mail',
-      '--with-http_realip_module', '--with-http_stub_status_module', '--with-http_v2_module'];
-    const components = {
-      'openssl': ['--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}', '--with-cc-opt=-I{{headersDir}}',
-        '--with-http_ssl_module', '--with-mail_ssl_module'],
+    const list = [
+      '--with-http_stub_status_module',
+      '--with-http_gzip_static_module',
+      '--with-mail',
+      '--with-http_realip_module',
+      '--with-http_stub_status_module',
+      '--with-http_v2_module'
+    ];
+    const componentOptions = {
+      'openssl': [
+        '--with-ld-opt=-L{{libDir}} -Wl,-rpath={{libDir}}',
+        '--with-cc-opt=-I{{headersDir}}',
+        '--with-http_ssl_module', '--with-mail_ssl_module'
+      ],
       'zlib': ['--with-zlib={{srcDir}}'],
       'pcre': ['--with-pcre={{srcDir}}']
     };
-    return _.union(this.componentList.populateFlagsFromDependencies(components), list);
+    return list.concat(this.componentList.populateFlagsFromDependencies(componentOptions));
   }
 }
 
 module.exports = Nginx;
 ```
 
-### Compilation action
-We need to configure the Blacksmith default paths to the recipe and the source tarball (if not already configured in `config.json`) and then call the actual compilation command:
+As you can see, in this example we are modifying source files in the `postExtract` hook and setting up the configuration options pointing to `openssl`, `zlib` and `pcre`.
 
-```
-$> blacksmith configure paths.recipes /tmp/blacksmith-recipes/
-$> blacksmith containerized-build zlib:/tmp/tarballs/zlib-1.2.8.tar.gz pcre:/tmp/tarballs/pcre-8.31.tar.gz openssl:/tmp/tarballs/openssl-1.0.2i.tar.gz nginx:/tmp/tarballs/nginx-1.10.1.tar.gz
-```
+Note that Blacksmith exposes a set of synchronous tools like `$file.substitute` that allows us to easily work with files and other system calls. You can find more information about these tools [here](https://github.com/bitnami/nami/blob/master/docs/Nami.md#built-in-modules).
 
-### Compilation definition file or `stack.json`
-In order to reproduce a specific build, you can put up a JSON file describing the components you want to build and their versions, in order. Then pass it to the Blacksmith command line with the `--json` option.
+### Build specification
 
-#### nginx.json
-```
+Once we have all the files required to compile our stack of components we can write the build specification that will be the main input for Blacksmith:
+`/tmp/nginx-build-spec.json`:
+```json
 {
-  "platform": {
-     "os": "linux",
-     "arch": "x64"
-  },
   "components": [
     {
-      "version": "1.2.8",
       "id": "zlib",
-      "sourceTarball": "/tmp/tarballs/zlib-1.2.8.tar.gz"
+      "version": "1.2.11",
+      "recipeLogicPath": "/tmp/zlib.js",
+      "source": {
+        "tarball": "/tmp/zlib-1.2.11.tar.gz",
+        "sha256": "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
+      }
     },
     {
       "id": "pcre",
-      "sourceTarball": "/tmp/tarballs/pcre-8.31.tar.gz"
+      "version": "8.31",
+      "recipeLogicPath": "/tmp/pcre.js",
+      "source": {
+        "tarball": "/tmp/pcre-8.31.tar.gz",
+        "sha256": "4e1f5d462796fdf782650195050953b8503b2a2fc05c31b681c2d5d54d1f659b"
+      }
     },
     {
       "id": "openssl",
-      "sourceTarball": "/tmp/tarballs/openssl-1.0.2i.tar.gz"
+      "version": "1.0.2i",
+      "recipeLogicPath": "/tmp/openssl.js",
+      "source": {
+        "tarball": "/tmp/openssl-1.0.2i.tar.gz",
+        "sha256": "9287487d11c9545b6efb287cdb70535d4e9b284dd10d51441d9b9963d000de6f"
+      }
     },
     {
-      "extraFiles": [
-        "/tmp/extraFiles/curl-ca-bundle-20100521.crt"
-      ];
       "id": "nginx",
-      "sourceTarball": "/tmp/tarballs/nginx-1.10.1.tar.gz"
+      "version": "1.13.0",
+      "recipeLogicPath": "/tmp/nginx.js",
+      "source": {
+        "tarball": "/tmp/nginx-1.13.0.tar.gz",
+        "sha256": "79f52ab6550f854e14439369808105b5780079769d7b8db3856be03c683605d7"
+      }
     }
   ]
 }
 ```
 
+### Compilation action
+Now we just need to call blacksmith with the path to the build specification:
+
 ```
-$> blacksmith containerized-build --json nginx.json
+$> blacksmith containerized-build /tmp/nginx-build-spec.json
+blacksm INFO  Running build inside docker image {{blacksmith-base-image}}
+blacksm INFO  You can find the full build log under {{blacksmith-output}}/logs/build.log
+blacksm INFO  Command successfully executed. Find its results under {{blacksmith-output}}
+blacksm INFO  logs: {{blacksmith-output}}/logs
+blacksm INFO  artifacts: {{blacksmith-output}}/artifacts
+blacksm INFO  config: {{blacksmith-output}}/config
 ```
+
+## Building NGINX using system packages
+
+In this example we are going to compile the NGINX webserver but this time we won't compile its dependencies. We will rely on system packages to install them. Because of that we need to modify our recipe for NGINX:
+`/tmp/nginx-system.js`:
+```js
+'use strict';
+
+class Nginx extends MakeComponent {
+  get buildDependencies() {
+    return [
+      {id: 'zlib1g-dev', type: 'system', distro: 'debian'},
+      {id: 'libpcre3-dev', type: 'system', distro: 'debian'},
+      {id: 'libssl-dev', type: 'system', distro: 'debian'}
+    ]
+  }
+  postExtract() {
+    const configureFlags = '--disable-shared --disable-libtool-lock --disable-cpp';
+    $file.substitute(
+      path.join(this.srcDir, 'auto/lib/pcre/make'),
+      [{pattern: './configure --disable-shared', value: `./configure ${configureFlags}`}]
+    );
+    $file.substitute(
+      path.join(this.srcDir, 'auto/options'),
+      [{pattern: 'NGX_RPATH=NO', value: 'NGX_RPATH=YES'}]
+    );
+  }
+  configureOptions() {
+    return [
+      '--with-http_stub_status_module',
+      '--with-http_gzip_static_module',
+      '--with-mail',
+      '--with-http_realip_module',
+      '--with-http_stub_status_module',
+      '--with-http_v2_module',
+      '--with-http_ssl_module',
+      '--with-mail_ssl_module'
+    ];
+  }
+}
+
+module.exports = Nginx;
+```
+
+In this recipe we have added as buildDependencies the system packages that installs zlib, PCRE and OpenSSL for Debian and we have removed the configuration options related to those components since NGINX compilation logic will look by default in the system paths. Note that if we want to add support for Centos we would just need to add more buildDependencies setting the ID of the Centos package and specifying 'centos' as `distro`.
+
+Now the build specification will be more simple but we should specify that we want to build NGINX for a Debian platform:
+`/tmp/nginx-system-build-spec.json`
+```json
+{
+  "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
+  "components": [{
+    "id": "nginx",
+    "version": "1.13.0",
+    "recipeLogicPath": "/tmp/nginx-system.js",
+    "source": {
+      "tarball": "/tmp/nginx-1.13.0.tar.gz",
+      "sha256": "79f52ab6550f854e14439369808105b5780079769d7b8db3856be03c683605d7"
+    }
+  }]
+}
+```
+
+### Compilation action
+Finally we can call blacksmith with the path to the new build specification:
+
+```
+$> blacksmith containerized-build /tmp/nginx-system-build-spec.json
+blacksm INFO  Running build inside docker image {{blacksmith-base-image}}
+blacksm INFO  You can find the full build log under {{blacksmith-output}}/logs/build.log
+blacksm INFO  Command successfully executed. Find its results under {{blacksmith-output}}
+blacksm INFO  logs: {{blacksmith-output}}/logs
+blacksm INFO  artifacts: {{blacksmith-output}}/artifacts
+blacksm INFO  config: {{blacksmith-output}}/config
+```
+
+In this case, if we take a look to the build summary that Blacksmith generates at ``{{blacksmith-output}}/artifacts/nginx-1.13.0-stack-linux-x64-debian-8-build.json` we can check that there is a field `systemRuntimeDependencies` that specifies the system packages required at runtime to execute the artifacts binaries.
