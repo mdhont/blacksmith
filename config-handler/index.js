@@ -40,7 +40,8 @@ class ConfigurationHandler {
         logs: null
       },
       componentTypeCollections: [],
-      plugins: []
+      plugins: [],
+      baseImages: [],
     };
     return _.isEmpty(key) ? defaultConf : _.get(defaultConf, key);
   }

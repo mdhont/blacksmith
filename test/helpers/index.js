@@ -25,20 +25,18 @@ function createTestEnv(conf) {
       'output': testDir
     },
     'componentTypeCollections': [],
-    'containerizedBuild': {
-      'images': [
-        {
-          'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r2',
-          'platform': {
-            'os': 'linux',
-            'arch': 'x64',
-            'distro': 'debian',
-            'version': '8'
-          },
-          'buildTools': []
-        }
-      ]
-    }
+    'baseImages': [
+      {
+        'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r2',
+        'platform': {
+          'os': 'linux',
+          'arch': 'x64',
+          'distro': 'debian',
+          'version': '8'
+        },
+        'buildTools': []
+      }
+    ]
   });
   const configFile = path.join(buildDir, 'config.json');
   fs.writeFileSync(configFile, JSON.stringify(_conf, null, 2));
@@ -133,7 +131,7 @@ function getDummyLogger(log) {
   const logger = {};
   if (log) log.text = '';
   _.each(['info', 'debug', 'error', 'warn',
-  'trace', 'trace1', 'trace2', 'trace3', 'trace4', 'trace5', 'trace6', 'trace7', 'trace8'], level => {
+    'trace', 'trace1', 'trace2', 'trace3', 'trace4', 'trace5', 'trace6', 'trace7', 'trace8'], level => {
     if (log) {
       logger[level] = function(msg) {
         log.text += `${level}: ${msg}\n`;

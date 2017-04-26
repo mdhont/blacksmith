@@ -33,28 +33,26 @@ module.exports = [{
       });
       const containerizedBuilder = new ContainerizedBuilder(parser.blacksmith,
         _.assign({logger: parser.blacksmith.logger}, opts));
-      const availableImages = parser.configHandler.get('containerizedBuild.images');
+      const availableImages = parser.configHandler.get('baseImages');
       if (_.isEmpty(availableImages)) throw new Error(`Not found any available image in the configuration`);
       containerizedBuilder.build(buildData, availableImages, opts);
     }
     return callback;
   },
   options: [
-      {name: 'force-rebuild', type: 'boolean',
-      description: 'Force rebuilding of components'},
-      {name: 'json', type: 'string', default: '',
-      description: 'JSON file containing the specification of what to build'},
-      {name: 'continue-at', description: 'Continue at a certain component in the list of components to build'},
-      {name: 'incremental-tracking', type: 'boolean', default: true,
+    {name: 'force-rebuild', type: 'boolean', description: 'Force rebuilding of components'},
+    {name: 'json', type: 'string', default: '', description: 'JSON file containing the specification of what to build'},
+    {name: 'continue-at', description: 'Continue at a certain component in the list of components to build'},
+    {name: 'incremental-tracking', type: 'boolean', default: true,
       description: 'Create separate tarballs for each of the individual components built'},
-      {name: 'build-id', description: 'Build identifier used to name certain directories and tarballs. ' +
+    {name: 'build-id', description: 'Build identifier used to name certain directories and tarballs. ' +
       'It defaults to the lastest built component'},
-      {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'},
-      {name: 'image-id', description: 'Docker image ID to use. Auto by default'},
-      {name: 'os', description: 'Platform OS of the build', default: 'linux'},
-      {name: 'arch', description: 'Platform Architecture of the build', default: 'x64'},
-      {name: 'distro', description: 'Distribution of the build', default: 'debian'},
-      {name: 'distro-version', description: 'Distribution version of the build', default: '8'}
+    {name: 'build-dir', description: 'Directory to use for storing build files, including the resulting artifacts'},
+    {name: 'image-id', description: 'Docker image ID to use. Auto by default'},
+    {name: 'os', description: 'Platform OS of the build', default: 'linux'},
+    {name: 'arch', description: 'Platform Architecture of the build', default: 'x64'},
+    {name: 'distro', description: 'Distribution of the build', default: 'debian'},
+    {name: 'distro-version', description: 'Distribution version of the build', default: '8'}
   ], configurationBasedOptions: {
     'paths.output': {name: 'output', description: 'Output directory containing all build dirs'},
     'compilation.maxJobs': {name: 'max-jobs', description: 'Max parallel jobs. Defaults to the number of cores+1'},
