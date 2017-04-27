@@ -5,14 +5,14 @@
   * [Useful configuration options](#useful-configuration-options)
 * [Basic commands](#basic-commands)
   * [configure](#configure)
-  * [inspect](#inspect)
   * [build](#build)
   * [containerized-build](#containerized-build)
   * [shell](#shell)
 * [Compilation recipes](#compilation-recipes)
 * [Examples](#examples)
-  * [Build a single component](#build-a-single-component)
-  * [Build a component and its dependencies](#build-a-component-and-its-dependencies)
+  * [Building NGINX compiling its dependencies](#building-nginx-compiling-its-dependencies)
+  * [Building NGINX using system packages](#building-nginx-using-system-packages)
+
 
 # Introduction
 
