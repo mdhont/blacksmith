@@ -52,8 +52,8 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
       * The path to the tarball with the source code
       * The path to a JavaScript file defining the compilation instructions for `zlib`
 
-#### /home/blacksmith/zlib.json
-```json
+#### /tmp/zlib.json
+```javascripton
 {
   "components": [
     {
@@ -68,9 +68,9 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
           }
         ]        
       },
-      "recipeLogicPath": "/home/blacksmith/zlib.js",
+      "recipeLogicPath": "/tmp/zlib.js",
       "source": {
-        "tarball": "/home/blacksmith/zlib-1.2.11.tar.gz",
+        "tarball": "/tmp/zlib-1.2.11.tar.gz",
         "sha256": "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
       }
     }  
@@ -78,7 +78,7 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
 }
 ```
 
-#### /home/blacksmith/zlib.js
+#### /tmp/zlib.js
 ```
 'use strict';
 
@@ -91,20 +91,39 @@ class Zlib extends Library {
 module.exports = zlib;
 ```
 
+#### Configuring Blacksmith
+
+If this is the first time you run Blacksmith you will need to configure it with at least a base image. This image will be used by Blacksmith as the environment for its builds. For doing so you can run:
+
+```bash
+>$ blacksmith configure --action add baseImages '{
+  "id": "bitnami/minideb-extras:jessie-buildpack",
+  "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
+  "buildTools":[
+    {"id": "build-essential", "type": "system"},
+    {"id": "git", "type": "system"},
+    {"id": "pkg-config", "type": "system"},
+    {"id": "unzip", "type": "system"}
+  ]
+}'
+```
+
+Executing the previous command will configure Blacksmith to use the image `bitnami/minideb-extras:jessie-buildpack` by default. This is a base image based on Debian that has already installed `build-essential`, `git`, `pkg-config` and `unzip`. We should specify those properties in order to Blacksmith to handle build and component requirements.
+
 #### Compilation action
 
-Configure the Blacksmith default paths to the recipe, if not already configured in `config.json`, and then call the actual compilation command:
+Once you have Blacksmith configured you can call the actual compilation command:
 
-```
-$> blacksmith containerized-build /home/blacksmith/zlib.json
+```bash
+$> blacksmith containerized-build /tmp/zlib.json
 blacksm INFO  Preparing build environment
 [...]
-blacksm INFO  Running build inside docker image <image_id>
+blacksm INFO  Running build inside docker image binami/minideb:jessie-extras
 [...]
-blacksm INFO  Command successfully executed. Find its results under /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack
-blacksm INFO  logs: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/logs
-blacksm INFO  artifacts: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/artifacts
-blacksm INFO  config: /home/bitnami/projects/blacksmith/output/2017-04-25-135735-zlib-stack/config
+blacksm INFO  Command successfully executed. Find its results under {{blacksmith-output}}
+blacksm INFO  logs: {{blacksmith-output}}/logs
+blacksm INFO  artifacts: {{blacksmith-output}}/artifacts
+blacksm INFO  config: {{blacksmith-output}}/config
 ```
 
 Find more information about Blacksmith features in the [Blacksmith user guide](./docs/Blacksmith.md).

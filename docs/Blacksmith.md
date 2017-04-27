@@ -23,7 +23,7 @@ Blacksmith will read its configuration options from the `config.json` file locat
 
 The configuration can be modified directly editing the file or using the command `blacksmith configure` that is explained below.
 
-Those configuration options can be modified anytime using the command line by passing options to the `blacksmith` command you are executing.
+Those configuration options can be overridden anytime using the command line by passing options to the `blacksmith` command you are executing.
 
 ## Useful configuration options
 ### compilation.prefix
@@ -173,7 +173,7 @@ The `build-spec.json` file can contain:
 
 Example:
 
-```json
+```javascripton
 {
   "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
   "components": [{
@@ -195,30 +195,31 @@ Example:
 }
 ```
 
-## zlib.js
+## Compilation Recipe
 
-In this file we should define a JavaScript class, extending from a predefined compilation class, and export it.
-The available classes as core components are (check the definition of the different types bellow):
+This is the main file for defining the build steps that Blacksmith should follow. For doing so you need to implement and export a JavaScript class.
+
+Blacksmith exposes several templates as Core Components so you don't need to implement all the required methods. The available classes are the following ones:
 
   * `Component`
   * `CompiledComponent`
   * `CompilableComponent`
   * `MakeComponent`
-  * `Library` - Interface meant for common libraries. It inherits from `MakeComponent` defining the component prefix to `{{prefix}}/common`.
+  * `Library`
 
-All the classes will execute the following methods in order (they can be overriden or recalled with `super`):
+All the classes will execute the following methods in order (they can be overridden or recalled with `super`):
 
-  * `initialize` -- Can be overriden. Will prepare environment variables and configuration options for the entire workflow
+  * `initialize` -- Can be overridden. Will prepare environment variables and configuration options for the entire workflow
   * `cleanup` -- Not need to override. Will remove files from previous builds if found
   * `extract` -- Not need to override. Will extract the source tarball
   * `copyExtraFiles` -- Not need to override. Will copy extra files defined in `stack.json` (explained at the end of the document)
   * `patch` -- Not need to override. Will apply the patch specified in `stack.json` (explained at the end of the document)
-  * `postExtract` -- Can be overriden. Common tasks that execute after extract
-  * `build` -- Can be overriden. Contain build instructions
-  * `postBuild` -- Can be overriden. Common tasks that execute after the build
-  * `install` -- Can be overriden. Copy the compiled files to the right directory
+  * `postExtract` -- Can be overridden. Common tasks that execute after extract
+  * `build` -- Can be overridden. Contain build instructions
+  * `postBuild` -- Can be overridden. Common tasks that execute after the build
+  * `install` -- Can be overridden. Copy the compiled files to the right directory
   * `fulfillLicenseRequirements` -- Not need to override. If the license information is defined it checks if it is available in the source code and copies it in the component prefix in order to be included in the resulting tarball
-  * `postInstall` -- Can be overriden. Common tasks that execute after the install
+  * `postInstall` -- Can be overridden. Common tasks that execute after the install
   * `minify` -- Not need to override. Remove unnecesary files or folders and strip binary files generated
 
 ### Component
@@ -240,12 +241,12 @@ Interface for components that are compiled using a Makefile. This class will mod
 ```
 build()
   configure() -- Execute the `configure` script of the component setting by default as prefix the generic prefix (setted in the main configuration) + the ID of the component. The options to pass to the `configure` script can be modified redefining the `configureOptions` method (see the section bellow for more details).
-  make() -- Call the `make` Unix command
+  make() -- Call the `make` Unix command. By default it will auto-detect the number of CPUs available and adjust the number of parallel jobs to run. This value can be configured as well in the Blacksmith configuration (compilation.maxParallelJobs).
 install()
   make(install) - Call the `make` Unix command with the argument 'install'
 ```
 
-Every method can be overriden or recalled with `super` to set up specific configurations or build commands.
+Every method can be overridden or recalled with `super` to set up specific configurations or build commands.
 
 ### Library
 
@@ -253,7 +254,7 @@ This class behaves the same as `MakeComponent` but the default prefix path will 
 
 ### Example
 
-```js
+```javascript
 'use strict';
 
 class Zlib extends Library {
@@ -265,13 +266,13 @@ class Zlib extends Library {
 module.exports = zlib;
 ```
 
-As explained before `zlib` extends from `Library` so it will be a component compiled through a Makefile setting as prefix <conf.prefix>/common`. In this case we modify the `configureOptions` method to include the flag `--shared` when running the `configure` script.
+As explained before, `zlib` extends from `Library` so it will be a component compiled through a Makefile setting as prefix <conf.prefix>/common`. In this case we modify the `configureOptions` method to include the flag `--shared` when running the `configure` script.
 
 ### configureOptions
 
-As we mentioned in this guide the method `configureOptions` will be used to define the different options to pass to the configure the component we are compiling. There will be cases in which a component needs to set a configuration option pointing to other component directory. In this situation the method `populateFlagsFromDependencies` become handy. Using this method you can obtain the different paths that other components define. This would be an example:
+As we mentioned, the method `configureOptions` will be used to define the different options to pass to the `configure` script of the component we are compiling. There will be cases in which a component needs to set a configuration option pointing to other component directory. In this situation the method `populateFlagsFromDependencies` become handy. Using this method you can obtain the different paths that other components define. This would be an example:
 
-```js
+```javascript
 configureOptions() {
     const options = ['--shared'];
     const components = {
@@ -294,7 +295,7 @@ Note that this feature is only available when running a containerized-build.
 
 To specify a build dependency you will need to specify the getter method `buildDependencies` in the JavaScript recipe. For example:
 
-```js
+```javascript
 get buildDependencies() {
   return [
     {
@@ -317,11 +318,20 @@ get buildDependencies() {
 }
 ```
 
-In this example we are installing two different types of build dependencies: a system package and a custom type.
+In this example we are installing two different types of build dependencies:
+ - First we define a system package. For system packages we just need to specify:
+   - The package name.
+   - The target distribution. If we are using that recipe in the distribution it sets Blacksmith will automatically handle the installation of the latest package available.
 
-For system packages we just need to specify the package name and the target distribution. If we are using that recipe in the distribution it sets Blacksmith will automatically handle the installation of the latest package available. Currently the distribution supported to install system packages are Centos and Debian.
+   **Note**: Currently the distribution supported to install system packages are **Centos** and **Debian**.
 
-In case we want to install something that is not a system package we need to specify the commands and  environment variables (if needed) required for its installation. In the example above we are downloading the binary of GO and adding it to the system PATH.
+ - Then we specify a custom type (anything that is not a system package). For these dependencies we need to specify:
+   - The dependency ID.
+   - The dependency type.
+   - The commands required to install the dependency.
+   - (Optional) Any environment variable that is required to be set.
+
+In the example above we are installing the system package 'zlib1g-dev', downloading the binary of GO and adding it to the system PATH.
 
 # Examples
 ## Building NGINX compiling its dependencies
@@ -330,17 +340,17 @@ In this example we will build NGINX binaries compiling as well its required depe
 First we will download the source code of all the components. For downloading the source tarballs of this guide you can run:
 
 ```sh
-wget https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz -O /tmp/zlib-1.2.11.tar.gz
-wget https://ftp.pcre.org/pub/pcre/pcre-8.31.tar.gz -O /tmp/pcre-8.31.tar.gz
-wget https://www.openssl.org/source/old/1.0.2/openssl-1.0.2i.tar.gz -O /tmp/openssl-1.0.2i.tar.gz
-wget http://nginx.org/download/nginx-1.13.0.tar.gz -O /tmp/nginx-1.13.0.tar.gz
+curl -SL https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/zlib-1.2.11.tar.gz -o /tmp/zlib-1.2.11.tar.gz
+curl -SL https://ftp.pcre.org/pub/pcre/pcre-8.31.tar.gz -o /tmp/pcre-8.31.tar.gz
+curl -SL https://www.openssl.org/source/old/1.0.2/openssl-1.0.2i.tar.gz -o /tmp/openssl-1.0.2i.tar.gz
+curl -SL http://nginx.org/download/nginx-1.13.0.tar.gz -o /tmp/nginx-1.13.0.tar.gz
 ```
 
 Now we can write the compilation recipes:
 
 #### zlib compilation recipe
 `/tmp/zlib.js`:
-```js
+```javascript
 'use strict';
 
 class Zlib extends Library {
@@ -353,7 +363,7 @@ module.exports = zlib;
 ```
 #### PCRE compilation recipe
 `/tmp/pcre.js`:
-```js
+```javascript
 'use strict';
 
 class Pcre extends Library {
@@ -366,7 +376,7 @@ module.exports = Pcre;
 ```
 #### OpenSSL compilation recipe
 `/tmp/openssl.js`:
-```js
+```javascript
 'use strict';
 
 class OpenSSL extends Library {
@@ -393,7 +403,7 @@ As we can see the compilation recipe of OpenSSL is a bit more complex:
 
 #### NGINX compilation recipe
 `/tmp/nginx.js`
-```js
+```javascript
 'use strict';
 
 class Nginx extends MakeComponent {
@@ -441,7 +451,7 @@ Note that Blacksmith exposes a set of synchronous tools like `$file.substitute` 
 
 Once we have all the files required to compile our stack of components we can write the build specification that will be the main input for Blacksmith:
 `/tmp/nginx-build-spec.json`:
-```json
+```javascripton
 {
   "components": [
     {
@@ -485,6 +495,9 @@ Once we have all the files required to compile our stack of components we can wr
 ```
 
 ### Compilation action
+
+If it is the first time you run Blacksmith first you need to configure its default base image. You can check how to do it [here](../README.md#configuring-blacksmith).
+
 Now we just need to call blacksmith with the path to the build specification:
 
 ```
@@ -501,7 +514,7 @@ blacksm INFO  config: {{blacksmith-output}}/config
 
 In this example we are going to compile the NGINX webserver but this time we won't compile its dependencies. We will rely on system packages to install them. Because of that we need to modify our recipe for NGINX:
 `/tmp/nginx-system.js`:
-```js
+```javascript
 'use strict';
 
 class Nginx extends MakeComponent {
@@ -544,7 +557,7 @@ In this recipe we have added as buildDependencies the system packages that insta
 
 Now the build specification will be more simple but we should specify that we want to build NGINX for a Debian platform:
 `/tmp/nginx-system-build-spec.json`
-```json
+```javascripton
 {
   "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
   "components": [{
