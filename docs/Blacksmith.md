@@ -173,7 +173,7 @@ The `build-spec.json` file can contain:
 
 Example:
 
-```javascripton
+```json
 {
   "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
   "components": [{
@@ -451,7 +451,7 @@ Note that Blacksmith exposes a set of synchronous tools like `$file.substitute` 
 
 Once we have all the files required to compile our stack of components we can write the build specification that will be the main input for Blacksmith:
 `/tmp/nginx-build-spec.json`:
-```javascripton
+```json
 {
   "components": [
     {
@@ -557,7 +557,7 @@ In this recipe we have added as buildDependencies the system packages that insta
 
 Now the build specification will be more simple but we should specify that we want to build NGINX for a Debian platform:
 `/tmp/nginx-system-build-spec.json`
-```javascripton
+```json
 {
   "platform": {"os": "linux", "arch": "x64", "distro": "debian", "version": "8"},
   "components": [{

@@ -53,7 +53,7 @@ This example demonstrates how to compile the 'zlib' library with Blacksmith. We 
       * The path to a JavaScript file defining the compilation instructions for `zlib`
 
 #### /tmp/zlib.json
-```javascripton
+```json
 {
   "components": [
     {
