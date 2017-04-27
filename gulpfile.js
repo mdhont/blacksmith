@@ -26,7 +26,6 @@ commonTasks.bundle({
   artifactName: 'blacksmith-linux-x64',
   sources: [
     './package.json',
-    './config.json',
     './config.json.sample',
     './index.js',
     './cli/**/*',
