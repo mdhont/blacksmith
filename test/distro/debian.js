@@ -9,6 +9,7 @@ const sinon = require('sinon');
 
 describe('Debian', () => {
   beforeEach(() => {
+    sinon.stub(nos, 'isInPath').callsFake(() => true);
     sinon.stub(nos, 'runProgram').callsFake((command, args, options) => {
       options = options || {};
       let text = '';
@@ -16,6 +17,11 @@ describe('Debian', () => {
         case 'file':
           text = `${args}: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, ` +
             `interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=12345, stripped`;
+          break;
+        case 'objdump':
+          text = `${args}: file format elf64-x86-64\n` +
+              `architecture: i386:x86-64, flags 0x00000112:\n` +
+              `EXEC_P, HAS_SYMS, D_PAGED\n`;
           break;
         case 'ldd':
           text = 'libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f8526cd7000)' +
@@ -34,6 +40,7 @@ describe('Debian', () => {
     });
   });
   afterEach(() => {
+    nos.isInPath.restore();
     nos.runProgram.restore();
   });
   it('provides an update command', () => {
@@ -46,9 +53,19 @@ describe('Debian', () => {
     expect(debian.installCommand(['zlib', 'openssl']))
       .to.be.eql('apt-get install -y --no-install-recommends zlib openssl');
   });
-  it('returns a list of system packages given a list of files', () => {
-    const debian = new Debian('x64');
-    expect(debian.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['libc6']);
+  describe('returns a list of system packages given a list of files', () => {
+    it('using "file"', () => {
+      nos.isInPath.restore();
+      sinon.stub(nos, 'isInPath').callsFake(cmd => cmd === 'file');
+      const debian = new Debian('x64');
+      expect(debian.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['libc6']);
+    });
+    it('using "objdump"', () => {
+      nos.isInPath.restore();
+      sinon.stub(nos, 'isInPath').callsFake(cmd => cmd === 'objdump');
+      const debian = new Debian('x64');
+      expect(debian.getRuntimePackages([path.join(__dirname, 'binary_sample')])).to.be.eql(['libc6']);
+    });
   });
   it('returns a list of system packages installed', () => {
     const debian = new Debian('x64');

@@ -27,7 +27,7 @@ function createTestEnv(conf) {
     'componentTypeCollections': [],
     'baseImages': [
       {
-        'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r2',
+        'id': 'bitnami/minideb-extras:jessie-buildpack',
         'platform': {
           'os': 'linux',
           'arch': 'x64',
