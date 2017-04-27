@@ -323,7 +323,7 @@ In this example we are installing two different types of build dependencies:
    - The package name.
    - The target distribution. If we are using that recipe in the distribution it sets Blacksmith will automatically handle the installation of the latest package available.
 
-   **Note**: Currently the distribution supported to install system packages are **Centos** and **Debian**.
+   **Note**: Currently the distributions supported to install system packages are **Centos** and **Debian**.
 
  - Then we specify a custom type (anything that is not a system package). For these dependencies we need to specify:
    - The dependency ID.
