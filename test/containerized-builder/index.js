@@ -1,24 +1,38 @@
 'use strict';
 
-const helpers = require('../helpers');
+const _ = require('lodash');
+const bsmock = require('./helpers/blacksmith-mock');
 const ContainerizedBuilder = require('../../lib/containerized-builder');
 const chai = require('chai');
+const expect = chai.expect;
+const fs = require('fs');
+const helpers = require('../helpers');
+const ImageRegistry = require('../../lib/containerized-builder/image-provider/image-registry');
+const path = require('path');
+const sinon = require('sinon');
 const spawnSync = require('child_process').spawnSync;
 const spawn = require('child_process').spawn;
-const bsmock = require('./helpers/blacksmith-mock');
-const fs = require('fs');
-const path = require('path');
-const expect = chai.expect;
 
-describe('Containerized Builder', function() {
+describe('ContainerizedBuilder', function() {
   this.timeout(30000);
-  beforeEach('prepare environment', () => {
+  beforeEach(() => {
+    helpers.cleanTestEnv();
+    sinon.stub(ImageRegistry.prototype, 'add').callsFake(() => true);
+    sinon.stub(ImageRegistry.prototype, 'remove').callsFake(() => true);
+    sinon.stub(ImageRegistry.prototype, 'getImage').callsFake((reqs) => {
+      if (_.isEmpty(reqs)) {
+        return bsmock.baseImage.id;
+      } else {
+        return null;
+      }
+    });
+  });
+  afterEach(() => {
+    ImageRegistry.prototype.add.restore();
+    ImageRegistry.prototype.remove.restore();
+    ImageRegistry.prototype.getImage.restore();
     helpers.cleanTestEnv();
   });
-  afterEach('clean environment', () => {
-    helpers.cleanTestEnv();
-  });
-  require('./utilities');
   it('creates an instance successfully', () => {
     const cb = new ContainerizedBuilder(bsmock.getBlacksmithInstance());
     expect(cb.logger).to.not.be.empty; // eslint-disable-line no-unused-expressions
@@ -35,8 +49,8 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      bsmock.baseImage,
+      component.buildSpec,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         exitOnEnd: false
@@ -56,8 +70,8 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      bsmock.baseImage,
+      component.buildSpec,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         forceRebuild: false,
@@ -69,7 +83,6 @@ describe('Containerized Builder', function() {
     );
     // Validate parameters
     expect(log.text).to.contain(`--config /opt/blacksmith/config/config.json`);
-    expect(log.text).to.contain(`--json /opt/blacksmith/config/components.json`);
     expect(log.text).to.contain(`--continue-at=${component.id}`);
     expect(log.text).to.contain(`--incremental-tracking`);
     // Validate config and component content
@@ -78,19 +91,25 @@ describe('Containerized Builder', function() {
       logging: {logFile: '/tmp/logs/build.log'},
       paths: {
         output: '/opt/blacksmith/output',
-        logs: '/tmp/logs',
         sandbox: test.sandbox,
-        recipes: [test.componentDir]
       },
       compilation: {prefix: test.prefix},
-      metadataServer: config.metadataServer,
       containerizedBuild: {
-        images: [{id: bsmock.baseImage}]
+        images: [{id: bsmock.baseImage.id}]
       }
     };
     expect(configRes).to.be.eql(desiredConf);
-    const components = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
-    expect(components).to.be.eql([`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`]);
+    const buildSpec = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
+    expect(buildSpec.components).to.be.eql([{
+      'id': component.id,
+      'version': component.version,
+      'recipeLogicPath': `/tmp/recipes/${component.id}/index.js`,
+      'metadata': component.buildSpec.components[0].metadata,
+      'source': {
+        'tarball': `/tmp/sources/${component.id}/${path.basename(component.source.tarball)}`,
+        'sha256': component.source.sha256
+      }
+    }]);
   });
 
   it('cannot allow to force the rebuild and continue at some point', () => {
@@ -101,8 +120,8 @@ describe('Containerized Builder', function() {
     const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
     const cb = new ContainerizedBuilder(blacksmithInstance);
     expect(() => cb.build(
-      [`${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`],
-      bsmock.baseImage,
+      component.buildSpec,
+      [bsmock.baseImage],
       {
         buildDir: test.buildDir,
         forceRebuild: true,
@@ -114,7 +133,7 @@ describe('Containerized Builder', function() {
     )).to.throw('You cannot use --force-rebuild and --continue-at in the same build');
   });
 
-  it('parses component properties as an object', () => {
+  it('parses component properties with patches and extraFiles', () => {
     const log = {};
     const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
@@ -130,25 +149,56 @@ describe('Containerized Builder', function() {
       components: [{
         id: component.id,
         version: component.version,
-        sourceTarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
-        patches: [path.join(test.buildDir, 'test.patch')],
-        extraFiles: [path.join(test.buildDir, 'test.extra')]
-      }]
-    }, bsmock.baseImage, {
+        recipeLogicPath: component.recipeLogicPath,
+        source: {
+          tarball: path.join(test.assetsDir, `${component.id}-${component.version}.tar.gz`),
+          sha256: component.source.sha256
+        },
+        patches: [{path: path.join(test.buildDir, 'test.patch'), sha256: '1234'}],
+        extraFiles: [{path: path.join(test.buildDir, 'test.extra'), sha256: '1234'}]
+      }],
+      platform: {os: 'linux', distro: 'debian'}
+    }, [bsmock.baseImage], {
       buildDir: test.buildDir,
       exitOnEnd: false
     });
-    const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/components.json')));
+    const result = JSON.parse(fs.readFileSync(path.join(test.buildDir, 'config/containerized-build.json')));
     const desiredResult = {components: [
       {
-        'sourceTarball': `/tmp/sources/${component.id}-${component.version}.tar.gz`,
-        'patches': ['/tmp/sources/test.patch'],
-        'extraFiles': ['/tmp/sources/test.extra'],
+        'recipeLogicPath': `/tmp/recipes/${component.id}/index.js`,
+        'source': {
+          'tarball': `/tmp/sources/${component.id}/${path.basename(component.source.tarball)}`,
+          'sha256': component.source.sha256
+        },
+        'patches': [{path: `/tmp/sources/${component.id}/test.patch`, sha256: '1234'}],
+        'extraFiles': [{path: `/tmp/sources/${component.id}/test.extra`, sha256: '1234'}],
         'id': component.id,
         'version': component.version
       }
-    ]};
+    ], platform: {os: 'linux', distro: 'debian'}};
     expect(result).to.be.eql(desiredResult);
+  });
+
+  it('skips the tarball of a component if it is not defined', () => {
+    const log = {};
+    const test = helpers.createTestEnv();
+    const component = helpers.createComponent(test);
+    const blacksmithTool = bsmock.createDummyBlacksmith(test);
+    const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
+    config.paths.rootDir = blacksmithTool;
+    const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
+    const cb = new ContainerizedBuilder(blacksmithInstance);
+    component.buildSpec.components[0].source = {};
+    cb.build(
+      component.buildSpec,
+      [bsmock.baseImage],
+      {
+        buildDir: test.buildDir,
+        exitOnEnd: false
+      }
+    );
+    expect(log.text).to.contain('Skipping sample1 tarball since it is not defined');
+    expect(log.text).to.contain('Command successfully executed');
   });
 
   it('opens a shell', () => {

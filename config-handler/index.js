@@ -1,6 +1,5 @@
 'use strict';
 const _ = require('nami-utils/lodash-extra');
-const nfile = require('nami-utils').file;
 const utils = require('common-utils');
 
 /**
@@ -37,17 +36,12 @@ class ConfigurationHandler {
         // Setting it to [] or null will make the BuildEnvironment use the default
         rootDir: this._rootDir,
         output: null,
-        recipes: [nfile.join(this._rootDir, 'recipes')],
         sandbox: null,
         logs: null
       },
       componentTypeCollections: [],
-      metadataServer: {
-        activate: false,
-        prioritize: false,
-        endPoint: null
-      },
-      plugins: []
+      plugins: [],
+      baseImages: [],
     };
     return _.isEmpty(key) ? defaultConf : _.get(defaultConf, key);
   }
@@ -59,7 +53,7 @@ class ConfigurationHandler {
     this._validate();
   }
   _validate() {
-    _.each(['paths.output', 'paths.recipes', 'paths.sandbox', 'compilation.prefix'], key => {
+    _.each(['paths.output', 'paths.sandbox', 'compilation.prefix'], key => {
       if (_.isEmpty(this.get(key))) {
         throw new Error(`You should configure the value of ${key} in the configuration file`);
       }

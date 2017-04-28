@@ -51,23 +51,6 @@ class BlacksmithParser extends Parser {
       this._addOptionFromConfigHandler(optContainer, optData, configKeyPath);
     });
   }
-  parseRequestedComponents(cliComponents, jsonSpecFile) {
-    if (_.isEmpty(cliComponents) && _.isEmpty(jsonSpecFile)) {
-      throw new Error('You must either provide a list of components or a JSON file with the build spec');
-    }
-    if (_.isEmpty(jsonSpecFile)) {
-      return {components: cliComponents};
-    } else {
-      if (!nfile.exists(jsonSpecFile)) {
-        throw new Error(`File ${jsonSpecFile} not found`);
-      }
-      const jsonSpec = utils.parseJSONFile(jsonSpecFile);
-      if (!_.isEmpty(cliComponents)) {
-        jsonSpec.components = (jsonSpec.components || []).concat(cliComponents);
-      }
-      return jsonSpec;
-    }
-  }
   parseOptions(command, options) {
     const json = {};
     // If the command has the 'json' option it can override default options
@@ -130,7 +113,6 @@ class BlacksmithParser extends Parser {
     });
     _.each([
       './commands/configure',
-      './commands/inspect',
       './commands/build',
       './commands/containerized-build',
     ].concat(this.configHandler.get('plugins')),

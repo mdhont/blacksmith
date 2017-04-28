@@ -22,78 +22,42 @@ function _platform(component) {
 
 describe('#containerized-build()', function() {
   this.timeout(240000);
-  const extraConf = {
-    extra: {
-      commands: ['blacksmith-containerized-build-command']
-    }
-  };
   const blacksmithHandler = new BlacksmithHandler();
   beforeEach(helpers.cleanTestEnv);
-  // afterEach(helpers.cleanTestEnv);
-  it('Builds a simple package from CLI', function() {
-    const test = helpers.createTestEnv(extraConf);
-    const component = helpers.createComponent(test);
-    const result = blacksmithHandler.javascriptExec(
-      test.configFile,
-      `--log-level trace containerized-build --build-dir ${test.buildDir} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
-    expect(result.code).to.be.eql(0,
-      `Build failed: \n` +
-      `stdout:\n` +
-      `${result.stdout}\n` +
-      `stderr:\n` +
-      `${result.stderr}`
+  afterEach(helpers.cleanTestEnv);
+
+  it('Should throw an error if JSON file is not valid', function() {
+    const test = helpers.createTestEnv();
+    const wrongInputs = {a: 1};
+    const inputsFile = path.join(test.buildDir, 'inputs.json');
+    fs.writeFileSync(inputsFile, JSON.stringify(wrongInputs));
+    expect(function() {
+      blacksmithHandler.exec(`--config ${test.configFile} containerized-build ${inputsFile}`);
+    }).to.throw(
+      `Unable to parse ${inputsFile}. Received:\n` +
+      `Invalid JSON for the schema containerized-build:\n` +
+      `instance additionalProperty "a" exists in instance when not allowed\n` +
+      `instance requires property "components"\n`
     );
-    expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
-    ).to.be.file();
   });
-  it('Propagates the metadata server configureation', function() {
-    const metadataServerEndpoint = 'https://test-metadata-server.net/api/v1';
-    const metadataServer = {
-      activate: false,
-      prioritize: true,
-      endPoint: metadataServerEndpoint
-    };
-    const test = helpers.createTestEnv({
-      metadataServer,
-      extra: {
-        commands: ['blacksmith-containerized-build-command']
-      }
-    });
-    const component = helpers.createComponent(test);
-    helpers.addComponentToMetadataServer(metadataServerEndpoint, component);
-    const result = blacksmithHandler.javascriptExec(
-      test.configFile,
-      `--log-level trace containerized-build --build-dir ${test.buildDir} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
-    expect(result.code).to.be.eql(0,
-      `Build failed: \n` +
-      `stdout:\n` +
-      `${result.stdout}\n` +
-      `stderr:\n` +
-      `${result.stderr}`
-    );
-    expect(
-      path.join(test.buildDir, `artifacts/${component.id}-${component.version}-stack-${_platform(component)}.tar.gz`)
-    ).to.be.file();
-    expect(
-      JSON.parse(fs.readFileSync(path.join(test.buildDir, `config/config.json`), {encoding: 'utf-8'})).metadataServer
-    ).to.be.eql(metadataServer);
-  });
+
   it('Builds a simple package from JSON with available options', function() {
-    const test = helpers.createTestEnv(extraConf);
+    const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const jobs = 3;
-    const buildResult = blacksmithHandler.exec(
+    const buildResult = blacksmithHandler.javascriptExec(
+      test.configFile,
       `--log-level trace --log-file ${path.join(test.buildDir, 'test.log')} ` +
       `--config ${test.configFile} ` +
       'containerized-build ' +
-      `--json ${component.buildSpecFile} ` +
       '--incremental-tracking ' +
       `--prefix ${test.buildDir} ` +
+      `--build-id ${component.buildSpec['build-id']} ` +
       `--build-dir ${test.buildDir} ` +
-      `--max-jobs ${jobs}`);
+      `--max-jobs ${jobs} ` +
+      `${component.buildSpecFile}`
+    );
+    expect(buildResult.code).to.be.eql(0, buildResult.stderr);
     // Modifies the build ID
     expect(
       path.join(
@@ -132,7 +96,7 @@ describe('#containerized-build()', function() {
     expect(buildResult.stdout).to.contain(`"--jobs=${jobs}"`);
   });
   it('Continues a previous build', function() {
-    const test = helpers.createTestEnv(extraConf);
+    const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const component2 = helpers.createComponent(test, {
       id: 'sample2',
@@ -140,7 +104,7 @@ describe('#containerized-build()', function() {
     const result = blacksmithHandler.javascriptExec(
       test.configFile,
       `containerized-build --build-dir ${test.buildDir} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+      `${component.buildSpecFile}`);
     expect(result.code).to.be.eql(0,
       `Build failed: \n` +
       `stdout:\n` +
@@ -148,14 +112,17 @@ describe('#containerized-build()', function() {
       `stderr:\n` +
       `${result.stderr}`
     );
-    const continueBuildRes = blacksmithHandler.exec('--log-level trace ' +
+    component.buildSpec.components = component.buildSpec.components.concat(component2.buildSpec.components);
+    fs.writeFileSync(component.buildSpecFile, JSON.stringify(component.buildSpec));
+    const continueBuildRes = blacksmithHandler.javascriptExec(
+      test.configFile,
+      '--log-level trace ' +
       `--config ${test.configFile} ` +
       'containerized-build ' +
-      `--json ${component.buildSpecFile} ` +
       `--build-dir ${test.buildDir} ` +
       `--build-id ${component2.id} ` +
       `--continue-at ${component2.id} ` +
-      `${component2.id}:${test.assetsDir}/${component2.id}-${component2.version}.tar.gz`);
+      `${component.buildSpecFile}`);
     expect(continueBuildRes.stdout).
     to.contain(`Skipping component ${component.id} ${component.version} because of continueAt=${component2.id}`);
     expect(
@@ -163,13 +130,12 @@ describe('#containerized-build()', function() {
     ).to.be.file();
   });
   it('Can open a shell and list component content', function() {
-    const test = helpers.createTestEnv(extraConf);
+    const test = helpers.createTestEnv();
     const component = helpers.createComponent(test);
     const result = blacksmithHandler.javascriptExec(
       test.configFile,
       `containerized-build --build-dir ${test.buildDir} ` +
-      `--json ${component.buildSpecFile} ` +
-      `${component.id}:${test.assetsDir}/${component.id}-${component.version}.tar.gz`);
+      `${component.buildSpecFile}`);
     expect(result.code).to.be.eql(0,
       `Build failed: \n` +
       `stdout:\n` +

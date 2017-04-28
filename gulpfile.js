@@ -26,10 +26,11 @@ commonTasks.bundle({
   artifactName: 'blacksmith-linux-x64',
   sources: [
     './package.json',
-    './config.json',
+    './config.json.sample',
     './index.js',
     './cli/**/*',
     './config-handler/*.js',
+    './schemas/*',
     './lib/**/*',
     './bin/**/*'
   ],
@@ -44,6 +45,7 @@ commonTasks.npm({
   sources: [
     './index.js',
     './cli/*.js',
+    './schemas/*',
     './config-handler/*.js',
     './lib/**/*'
   ],

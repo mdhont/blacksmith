@@ -8,7 +8,12 @@ const getBlacksmithInstance = (config, log) => {
   return {
     config: new helpers.DummyConfigHandler(config),
     bm: {
-      createBuildEnvironment: () => {}
+      createBuildEnvironment: () => {},
+      componentProvider: {
+        getComponent: (c) => {
+          return c;
+        }
+      }
     },
     logger: helpers.getDummyLogger(log)
   };
@@ -26,5 +31,9 @@ const createDummyBlacksmith = (test) => {
 module.exports = {
   getBlacksmithInstance,
   createDummyBlacksmith,
-  baseImage: 'gcr.io/bitnami-containers/bitnami-base-buildpack'
+  baseImage: {
+    id: 'gcr.io/bitnami-containers/bitnami-base-buildpack',
+    platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
+    buildTools: []
+  }
 };

@@ -11,4 +11,4 @@ const config = JSON.parse(fs.readFileSync(test.configFile, {encoding: 'utf8'}));
 config.paths.rootDir = blacksmithTool;
 const blacksmithInstance = bsmock.getBlacksmithInstance(config, log);
 const cb = new ContainerizedBuilder(blacksmithInstance);
-cb.dockerShell(test.buildDir, bsmock.baseImage);
+cb.dockerShell(test.buildDir, bsmock.baseImage.id);

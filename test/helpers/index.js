@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const spawnSync = require('child_process').spawnSync;
@@ -21,28 +22,21 @@ function createTestEnv(conf) {
     },
     'paths': {
       'sandbox': sandbox,
-      'recipes': [componentDir],
       'output': testDir
     },
     'componentTypeCollections': [],
-    'metadataServer': {
-      'activate': false,
-      'prioritize': false,
-      'endPoint': null
-    },
-    'containerizedBuild': {
-      'images': [
-        {
-          'id': 'gcr.io/bitnami-containers/bitnami-base-buildpack:r1',
-          'platform': {
-            'os': 'linux',
-            'arch': 'x64',
-            'distro': 'debian',
-            'version': '8'
-          }
-        }
-      ]
-    }
+    'baseImages': [
+      {
+        'id': 'bitnami/minideb-extras:jessie-buildpack',
+        'platform': {
+          'os': 'linux',
+          'arch': 'x64',
+          'distro': 'debian',
+          'version': '8'
+        },
+        'buildTools': []
+      }
+    ]
   });
   const configFile = path.join(buildDir, 'config.json');
   fs.writeFileSync(configFile, JSON.stringify(_conf, null, 2));
@@ -73,44 +67,57 @@ function createComponent(test, options) {
   const componentVersion = options.version;
 
   fs.mkdirSync(path.join(test.componentDir, componentId));
-  fs.writeFileSync(path.join(test.componentDir, `${componentId}/index.js`), `
+  const recipeLogicPath = path.join(test.componentDir, `${componentId}/index.js`);
+  fs.writeFileSync(recipeLogicPath, `
     'use strict';
     class ${componentId} extends Library {}
     module.exports = ${componentId};`);
   const metadata = {
     'id': componentId,
     'latest': componentVersion,
-    'component': {
-      'id': componentId,
-      'licenses': [
-        {
-          'type': options.licenseType,
-          'licenseRelativePath': options.licenseRelativePath,
-          'url': options.licenseUrl,
-          'main': true
-        }
-      ]
-    }
-  };
-  fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
-  const buildSpec = {
-    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
-    'build-id': `${componentId}-test`,
-    'build-dir': test.buildDir,
-    components: [
-      {id: componentId, sourceTarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`)}
+    'licenses': [
+      {
+        'type': options.licenseType,
+        'licenseRelativePath': options.licenseRelativePath,
+        'url': options.licenseUrl,
+        'main': true
+      }
     ]
   };
-  const buildSpecFile = path.join(test.componentDir, `${componentId}.json`);
-  fs.writeFileSync(buildSpecFile, JSON.stringify(buildSpec, null, 2));
+  fs.writeFileSync(path.join(test.componentDir, `${componentId}/metadata.json`), JSON.stringify(metadata, null, 2));
   spawnSync('tar', [
     'zcf', `${componentId}-${componentVersion}.tar.gz`,
     '-C', path.join(__dirname, 'assets/sample')].concat(
     fs.readdirSync(path.join(__dirname, 'assets/sample'))), {cwd: test.assetsDir});
+  const checksum = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`)))
+    .digest('hex');
+  const buildSpec = {
+    platform: {os: os.platform(), arch: os.arch(), distro: 'debian', version: '8'},
+    components: [
+      {
+        id: componentId,
+        version: componentVersion,
+        recipeLogicPath,
+        metadata,
+        source: {
+          tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+          sha256: checksum
+        }
+      }
+    ]
+  };
+  const buildSpecFile = path.join(test.componentDir, `${componentId}.json`);
+  fs.writeFileSync(buildSpecFile, JSON.stringify(buildSpec, null, 2));
   return {
     id: componentId,
     version: componentVersion,
-    sourceTarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+    recipeLogicPath,
+    source: {
+      tarball: path.join(test.assetsDir, `${componentId}-${componentVersion}.tar.gz`),
+      sha256: checksum
+    },
     licenseRelativePath: options.licenseRelativePath,
     licenseType: options.licenseType,
     licenseUrl: options.licenseUrl,
@@ -124,7 +131,7 @@ function getDummyLogger(log) {
   const logger = {};
   if (log) log.text = '';
   _.each(['info', 'debug', 'error', 'warn',
-  'trace', 'trace1', 'trace2', 'trace3', 'trace4', 'trace5', 'trace6', 'trace7', 'trace8'], level => {
+    'trace', 'trace1', 'trace2', 'trace3', 'trace4', 'trace5', 'trace6', 'trace7', 'trace8'], level => {
     if (log) {
       logger[level] = function(msg) {
         log.text += `${level}: ${msg}\n`;

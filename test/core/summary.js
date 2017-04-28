@@ -2,6 +2,8 @@
 
 const Summary = require('../../lib/core/build-manager/artifacts/summary');
 const BuildEnvironment = require('../../lib/core/build-manager/build-environment');
+const Debian = require('../../lib/distro/debian');
+const Distro = require('../../lib/distro/distro');
 const helpers = require('../helpers');
 const path = require('path');
 const os = require('os');
@@ -12,6 +14,7 @@ const spawnSync = require('child_process').spawnSync;
 const chai = require('chai');
 const chaiFs = require('chai-fs');
 const expect = chai.expect;
+const sinon = require('sinon');
 chai.use(chaiFs);
 
 describe('Summary', () => {
@@ -34,7 +37,6 @@ describe('Summary', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
-      sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -48,7 +50,7 @@ describe('Summary', () => {
   it('captures the build time', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -64,7 +66,7 @@ describe('Summary', () => {
   it('adds a new Artifact without incrementalTracking', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -74,13 +76,45 @@ describe('Summary', () => {
     const component = {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: test.prefix,
-      mainLicense: {
-        type: 'BSD3',
-        licenseRelativePath: 'LICENSE'
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
       },
-      sourceTarball: 'test.tar.gz'
+      systemRuntimeDependencies: [],
     };
     summary.addArtifact(component);
+    const artifact = summary.artifacts[0];
+    _.each(component, (v, k) => {
+      expect(artifact[k]).to.be.eql(v);
+    });
+  });
+  it('adds a new Artifact with system packages', () => {
+    const test = helpers.createTestEnv();
+    const be = new BuildEnvironment({
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox
+    });
+    const summary = new Summary(be);
+    fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
+    const component = {
+      metadata: {id: 'component', version: '1.0.0'},
+      prefix: test.prefix,
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      },
+      systemRuntimeDependencies: ['libc6'],
+    };
+    sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => ['libc6']);
+    try {
+      summary.addArtifact(component);
+    } catch (e) {
+      Distro.prototype.getRuntimePackages.restore();
+      throw e;
+    }
+    Distro.prototype.getRuntimePackages.restore();
     const artifact = summary.artifacts[0];
     _.each(component, (v, k) => {
       expect(artifact[k]).to.be.eql(v);
@@ -89,7 +123,7 @@ describe('Summary', () => {
   it('adds a new Artifact with incrementalTracking', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -113,7 +147,7 @@ describe('Summary', () => {
   it('compress the resulting artifacts', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -134,7 +168,7 @@ describe('Summary', () => {
   it('compress the resulting artifacts picking just some files', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -158,7 +192,7 @@ describe('Summary', () => {
   it('compress the resulting artifacts excluding some files', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -184,7 +218,7 @@ describe('Summary', () => {
   it('compress the resulting artifacts excluding but including other artifact ones', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -212,7 +246,7 @@ describe('Summary', () => {
   it('compress with incrementalTracking', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -238,7 +272,6 @@ describe('Summary', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
-      sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -251,11 +284,10 @@ describe('Summary', () => {
     _.extend(component, {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: test.prefix,
-      mainLicense: {
-        type: 'BSD3',
-        licenseRelativePath: 'LICENSE'
-      },
-      sourceTarball: 'test.tar.gz',
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      }
     });
     summary.addArtifact(component);
     summary.end();
@@ -263,7 +295,8 @@ describe('Summary', () => {
       'buildTime': 0,
       'prefix': test.prefix,
       platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
-      'builtOn': new RegExp(`${new Date().getFullYear()}-.*`)
+      'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
+      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
     };
     const expectedArtifact = {
       'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
@@ -272,14 +305,90 @@ describe('Summary', () => {
         'version': component.metadata.version
       },
       'prefix': component.prefix,
-      'mainLicense': {
-        type: 'BSD3',
-        licenseRelativePath: 'LICENSE'
+      'source': {
+        'tarball': 'test.tar.gz',
+        'sha256': '1234'
       },
-      'sourceTarball': 'test.tar.gz',
-      'parentClass': 'Library'
+      'systemRuntimeDependencies': [],
     };
-    const obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
+    let obtainedResult = null;
+    try {
+      obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    } catch (e) {
+      Debian.prototype.listPackages.restore();
+      throw e;
+    }
+    Debian.prototype.listPackages.restore();
+    const check = function(toCheck, valid) {
+      _.each(valid, (v, k) => {
+        if (_.isObject(v) && !_.isRegExp(v)) {
+          expect(toCheck[k]).to.be.eql(v, `wrong ${k}`);
+        } else {
+          expect(!!toCheck[k].toString().match(v), 'Malformed JSON').to.be.eql(true);
+        }
+      });
+    };
+    check(obtainedResult, expectedResult);
+    expect(obtainedResult.artifacts.length).to.be.eql(1);
+    check(obtainedResult.artifacts[0], expectedArtifact);
+  });
+  it('writes a JSON report including components sytem packages', () => {
+    const test = helpers.createTestEnv();
+    const be = new BuildEnvironment({
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
+      outputDir: test.buildDir,
+      prefixDir: test.prefix,
+      sandboxDir: test.sandbox
+    });
+    const summary = new Summary(be);
+    fs.writeFileSync(path.join(test.prefix, 'hello'), 'hello');
+    const component1 = {
+      metadata: {id: 'component', version: '1.0.0'},
+      prefix: test.prefix,
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      },
+      systemRuntimeDependencies: ['libc1']
+    };
+    const component2 = {
+      metadata: {id: 'component2', version: '1.0.0'},
+      prefix: test.prefix,
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      },
+      systemRuntimeDependencies: ['libc2']
+    };
+    let cont = 1;
+    sinon.stub(Distro.prototype, 'getRuntimePackages').callsFake(() => [`libc${cont++}`, `libc${cont}`]);
+    try {
+      summary.addArtifact(component1);
+      summary.addArtifact(component2);
+      summary.end();
+    } catch (e) {
+      Distro.prototype.getRuntimePackages.restore();
+      throw e;
+    }
+    Distro.prototype.getRuntimePackages.restore();
+    const expectedResult = {
+      'buildTime': 0,
+      'prefix': test.prefix,
+      platform: {os: 'linux', arch: 'x64', distro: 'debian', version: '8'},
+      'builtOn': new RegExp(`${new Date().getFullYear()}-.*`),
+      'systemRuntimeDependencies': ['libc1', 'libc2', 'libc3'],
+      'buildTimePackages': [{id: 'libc6', version: '6.0.0'}],
+    };
+    sinon.stub(Debian.prototype, 'listPackages').callsFake(() => [{id: 'libc6', version: '6.0.0'}]);
+    let obtainedResult = null;
+    try {
+      obtainedResult = JSON.parse(summary.toJson({test: 2}));
+    } catch (e) {
+      Debian.prototype.listPackages.restore();
+      throw e;
+    }
+    Debian.prototype.listPackages.restore();
     const check = function(toCheck, valid) {
       _.each(valid, (v, k) => {
         if (_.isObject(v) && !_.isRegExp(v)) {
@@ -290,14 +399,11 @@ describe('Summary', () => {
       });
     };
     check(obtainedResult, expectedResult);
-    expect(obtainedResult.artifacts.length).to.be.eql(1);
-    check(obtainedResult.artifacts[0], expectedArtifact);
   });
   it('serializes the result', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
       platform: {distro: 'debian', version: '8'},
-      sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox
@@ -307,11 +413,10 @@ describe('Summary', () => {
     const component = {
       metadata: {id: 'component', version: '1.0.0'},
       prefix: test.prefix,
-      mainLicense: {
-        type: 'BSD3',
-        licenseRelativePath: 'LICENSE'
-      },
-      sourceTarball: 'test.tar.gz'
+      source: {
+        tarball: 'test.tar.gz',
+        sha256: '1234'
+      }
     };
     summary.addArtifact(component);
     summary.end();
@@ -336,7 +441,6 @@ describe('Summary', () => {
   it('serializes the result with a custom platform', () => {
     const test = helpers.createTestEnv();
     const be = new BuildEnvironment({
-      sourcePaths: [test.assetsDir],
       outputDir: test.buildDir,
       prefixDir: test.prefix,
       sandboxDir: test.sandbox,

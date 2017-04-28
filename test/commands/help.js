@@ -61,7 +61,7 @@ describe('Blacksmith App', function() {
           + getOptionReText('log-file')
           + getOptionReText('config')
           + getOptionReText('version', {type: 'boolean'})
-          + 'And \<command\> is one of: configure, inspect, build, containerized-build, shell\\n+'
+          + 'And \<command\> is one of: configure, build, containerized-build, shell\\n+'
           + 'To get more information about a command, you can execute:\\n+'
           + `\\s*blacksmith \<command\> --help\\n+${extraRe || ''}$`
         );
@@ -71,7 +71,6 @@ describe('Blacksmith App', function() {
       it('appears when called without arguments', function() {
         const test = helpers.createTestEnv();
         const result = blacksmithHandler.javascriptExec(test.configFile, '');
-        // const stdout = blacksmithHandler.exec('').stdout;
         expect(result.stdout).to.match(getHelpRe());
       });
       it('appears when called with --help', function() {

@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-expressions */
 
 const Component = require('../../lib/base-components/component');
+const crypto = require('crypto');
 const helpers = require('../helpers');
 const path = require('path');
 const fs = require('fs');
@@ -16,7 +17,7 @@ describe('Component', () => {
   before('configure metadata', () => {
     metadata = {
       'id': 'sample',
-      'version': '1.0.0'
+      'latest': '1.0.0'
     };
   });
 
@@ -24,7 +25,7 @@ describe('Component', () => {
     let component = null;
 
     before('prepare component', () => {
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
     });
 
     it('"setup" method should set the parameters "be" and "componentList" properly', () => {
@@ -48,7 +49,7 @@ describe('Component', () => {
         prefixDir: prefixDir,
         sandboxDir: sandboxDir
       };
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
       component.setup({be}, {});
     });
 
@@ -81,29 +82,6 @@ describe('Component', () => {
     });
   });
 
-  describe('Component~validate', () => {
-    let component = null;
-
-    beforeEach('initialize component', () => {
-      component = new Component(metadata);
-    });
-
-    it('"validate" method should throw an error if metadata is empty', () => {
-      component.metadata = '';
-      component.setup({be: null}, null);
-      expect(() => component.validate()).to.throw('You must configure some software product to build');
-    });
-
-    it('"validate" method should throw an error if "id", "version" or "licenses" is not provided', () => {
-      component.metadata = {id: '', version: '', licenses: ''};
-      component.setup({be: null}, null);
-      expect(() => component.validate()).to.throw('Some errors were found validating  ' +
-                                                  'formula:\n You must provide a proper \'id\' for you component\n' +
-                                                  'You must provide a proper \'version\' for you component\n' +
-                                                  'You must provide a proper \'licenses\' for you component');
-    });
-  });
-
   describe('Component~fulfillLicenseRequirements', () => {
     let component = null;
     let testEnv = null;
@@ -111,18 +89,23 @@ describe('Component', () => {
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
     });
 
     afterEach('clean environment', () => {
       helpers.cleanTestEnv();
     });
 
-    it('"fulfillLicenseRequirements" method should throw an error if ' +
+    it('"fulfillLicenseRequirements" method should show a warning if ' +
     'there is no license defined in the metadata', () => {
       component.setup({be: null}, null);
       component.metadata.licenses = [];
-      expect(() => component.fulfillLicenseRequirements()).to.throw(`You should specify a proper 'licenses' field`);
+      let log = '';
+      component.logger.debug = (msg) => log += msg;
+      component.fulfillLicenseRequirements();
+      expect(log).to.contain(
+        `Skipping license propagation. There is no license information available for ${component.id}`
+      );
     });
 
     it('"fulfillLicenseRequirements" method should throw an error if "main" attribute is not defined', () => {
@@ -201,7 +184,7 @@ describe('Component', () => {
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
     });
 
     afterEach('clean environment', () => {
@@ -223,27 +206,26 @@ describe('Component', () => {
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
-
-    it('"copyExtraFiles" should throw an error if the path is not valid', () => {
-      component.extraFiles = [null];
+    it('"copyExtraFiles" should throw an error if the checksum does not match', () => {
+      const extraFiles = [{path: path.join(testEnv.testDir, 'test1'), sha256: '1234'}];
+      fs.writeFileSync(extraFiles[0].path, 'content');
+      component.extraFiles = extraFiles;
       fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
       expect(() => component.copyExtraFiles()).to.throw(
-        'Wrong extraFiles defintion. Found null instead of a file path'
+        `Calculated SHA256 of ${path.join(testEnv.testDir, 'test1')} ` +
+        `(ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73) doesn\'t match the given one (1234)`
       );
     });
 
-    it('"copyExtraFiles" should throw an error if the path is not absolute', () => {
-      component.extraFiles = ['test'];
-      fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
-      expect(() => component.copyExtraFiles()).to.throw('Path to extraFiles should be absolute. Found test');
-    });
-
     it('"copyExtraFiles" should copy two extra files', () => {
-      const extraFiles = [path.join(testEnv.testDir, 'test1'), path.join(testEnv.testDir, 'test2')];
-      extraFiles.forEach(extraFile => fs.writeFileSync(extraFile, ''));
+      const extraFiles = [{path: path.join(testEnv.testDir, 'test1')}, {path: path.join(testEnv.testDir, 'test2')}];
+      extraFiles.forEach(extraFile => {
+        fs.writeFileSync(extraFile.path, 'content');
+        extraFile.sha256 = 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73';
+      });
       component.extraFiles = extraFiles;
       fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
       component.copyExtraFiles();
@@ -266,23 +248,33 @@ describe('Component', () => {
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
       componentFixture = helpers.createComponent(testEnv, metadata);
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
 
     it('"extract" should throw an error if the path is not set', () => {
-      component.sourceTarball = null;
+      component.source.tarball = null;
       expect(() => component.extract()).to.throw('The source tarball is missing. Received null');
     });
 
     it('"extract" should throw an error if the path is not absolute', () => {
-      component.sourceTarball = 'tarball.tar.gz';
-      expect(() => component.extract()).to.throw('Path to sourceTarball should be absolute. Found tarball.tar.gz');
+      component.source.tarball = 'tarball.tar.gz';
+      expect(() => component.extract()).to.throw('Path to source tarball should be absolute. Found tarball.tar.gz');
+    });
+
+    it('"extract" should throw an error if the checksum does not match', () => {
+      component.source.tarball = componentFixture.source.tarball;
+      component.source.sha256 = '1234';
+      expect(() => component.extract()).to.throw(
+        `Calculated SHA256 of ${componentFixture.source.tarball} (${componentFixture.source.sha256})` +
+        ` doesn't match the given one (1234)`
+      );
     });
 
     it('"extract" should unpack tarball', () => {
-      component.sourceTarball = componentFixture.sourceTarball;
+      component.source.tarball = componentFixture.source.tarball;
+      component.source.sha256 = componentFixture.source.sha256;
       component.extract();
       expect(path.join(
         testEnv.sandbox, `${component.metadata.id}-${component.metadata.version}`, 'exampleA/exampleA.txt'
@@ -297,7 +289,7 @@ describe('Component', () => {
     beforeEach('initialize component and environment', () => {
       helpers.cleanTestEnv();
       testEnv = helpers.createTestEnv();
-      component = new Component(metadata);
+      component = new Component(metadata.id, metadata.latest, {}, metadata);
       component.setup({be: {prefixDir: testEnv.prefix, sandboxDir: testEnv.sandbox}}, null);
     });
 
@@ -305,18 +297,25 @@ describe('Component', () => {
       helpers.cleanTestEnv();
     });
 
-    it('"patch" method should throw an error if the path is not valid', () => {
-      component.patches = [null];
-      expect(() => component.patch()).to.throw('Wrong patches defintion. Found null instead of a file path');
-    });
-
-    it('"patch" method should throw an error if the path is not absolute', () => {
-      component.patches = ['test'];
-      expect(() => component.patch()).to.throw('Path to patches should be absolute. Found test');
+    it('"patch" should throw an error if the checksum does not match', () => {
+      const patches = [{path: path.join(testEnv.testDir, 'test1'), sha256: '1234'}];
+      fs.writeFileSync(patches[0].path, 'content');
+      component.patches = patches;
+      fs.mkdirSync(path.join(testEnv.sandbox, 'sample-1.0.0'));
+      expect(() => component.patch()).to.throw(
+        `Calculated SHA256 of ${path.join(testEnv.testDir, 'test1')} ` +
+        `(ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73) doesn\'t match the given one (1234)`
+      );
     });
 
     it('"patch" method should execute the patch in the file', () => {
-      component.patches = [path.join(__dirname, 'fixtures', 'patch')];
+      component.patches = [{
+        path: path.join(__dirname, 'fixtures', 'patch'),
+        sha256: crypto
+          .createHash('sha256')
+          .update(fs.readFileSync(path.join(__dirname, 'fixtures', 'patch')))
+          .digest('hex')
+      }];
       const sampleDir = path.join(testEnv.sandbox, 'sample-1.0.0');
       fs.mkdirSync(sampleDir);
       fs.writeFileSync(

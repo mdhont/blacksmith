@@ -1,0 +1,61 @@
+{
+  "id": "build",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["components"],
+  "properties": {
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "arch", "distro", "version"],
+      "properties": {
+        "os": {"type": "string"},
+        "arch": {"type": "string"},
+        "distro": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "components": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "version", "recipeLogicPath", "source"],
+        "properties": {
+          "id": {"type": "string"},
+          "version": {"type": "string"},
+          "metadata": {"type": "object"},
+          "recipeLogicPath": {"type": "string"},
+          "source": {
+            "type": "object",
+            "properties": {
+              "tarball": {"type": "string"},
+              "sha256": {"type": "string"}
+            }
+          },
+          "patches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {"type": "string"},
+                "sha256": {"type": "string"}
+              }
+            }
+          },
+          "extraFiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {"type": "string"},
+                "sha256": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
