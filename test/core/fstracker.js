@@ -117,6 +117,26 @@ describe('FSTracker', () => {
     tarballUtils.tar.restore();
     expect(result).to.be.eql([path.join(testDir, 'b'), path.join(testDir, 'a')]);
   });
+  it('calls for compression using just the minimum number of directories without missing files', () => {
+    const fstracker = new FileSystemTracker(testDir);
+    fstracker.init();
+    fs.writeFileSync(path.join(testDir, 'a'), 'hello');
+    fs.mkdirSync(path.join(testDir, 'b'));
+    fs.writeFileSync(path.join(testDir, 'b/c'), 'hello');
+    fs.writeFileSync(path.join(testDir, 'bb'), 'hello');
+    fstracker.commit();
+    const tarball = '/tmp/blacksmith-test-env/delta.tar.gz';
+    let result = [];
+    sinon.stub(tarballUtils, 'tar').callsFake(list => result = list);
+    try {
+      fstracker.captureDelta(tarball, {all: true});
+    } catch (e) {
+      tarballUtils.tar.restore();
+      throw e;
+    }
+    tarballUtils.tar.restore();
+    expect(result).to.be.eql([path.join(testDir, 'b'), path.join(testDir, 'a'), path.join(testDir, 'bb')]);
+  });
   it('captures a selection of files', () => {
     const fstracker = new FileSystemTracker(testDir);
     fstracker.init();
