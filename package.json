@@ -1,6 +1,6 @@
 {
   "name": "blacksmith",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Bitnami Blacksmith System",
   "main": "index.js",
   "engines": {
