@@ -120,10 +120,17 @@ describe('ImageProvider', () => {
     });
     const imageID = imageProvider.getImage([
       {id: 'zlib', type: 'system', distro: 'debian'},
-      {id: 'glibc', type: 'system', distro: 'centos'}
+      {id: 'glibc', type: 'system', distro: 'centos'},
+      {id: 'install_pip', type: 'pip', installCommands: 'pip install wheel'},
+      {id: 'install_pip_centos', type: 'pip', distro: 'centos', installCommands: 'pip install numpy'},
+      {id: 'install_pip_debian', type: 'pip', distro: 'debian', installCommands: 'pip install Cython'},
     ], platform);
     expect(
       _.find(imageProvider.imageRegistry.images, {id: imageID}).buildTools
-    ).to.be.eql([{id: 'zlib', type: 'system', distro: 'debian'}]);
-  });
+    ).to.be.eql([
+      {id: 'zlib', type: 'system', distro: 'debian'},
+      {id: 'install_pip', type: 'pip', installCommands: 'pip install wheel'},
+      {id: 'install_pip_debian', type: 'pip', distro: 'debian', installCommands: 'pip install Cython'},
+    ]);
+  });  
 });
