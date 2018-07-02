@@ -20,4 +20,4 @@ fi
 # We need to have the blacksmith path in the NODE_PATH
 export NODE_PATH=$NODE_PATH:`dirname $ROOTDIR`
 
-$NODE_RUNTIME $ROOTDIR/index.js "$@"
+$NODE_RUNTIME --stack_size=16000 $ROOTDIR/index.js "$@"
