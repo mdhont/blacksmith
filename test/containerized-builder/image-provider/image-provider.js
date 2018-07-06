@@ -132,5 +132,32 @@ describe('ImageProvider', () => {
       {id: 'install_pip', type: 'pip', installCommands: 'pip install wheel'},
       {id: 'install_pip_debian', type: 'pip', distro: 'debian', installCommands: 'pip install Cython'},
     ]);
+  });
+  it('ignore system requirements that are not for the target distro version', () => {
+    const platform = {os: 'linux', distro: 'debian', version: 9};
+    const baseImage = {
+      id: 'base',
+      platform,
+      buildTools: []
+    };
+    const registryFile = nos.createTempFile();
+    nfile.write(registryFile, '[]');
+    const imageProvider = new ImageProvider([baseImage], {
+      registryFile
+    });
+    const imageID = imageProvider.getImage([
+      {id: 'zlib', type: 'system', distro: 'debian', version: 8},
+      {id: 'glibc', type: 'system', distro: 'debian'},
+      {id: 'install_pip', type: 'pip', installCommands: 'pip install wheel'},
+      {id: 'install_pip_centos', type: 'pip', distro: 'centos', installCommands: 'pip install numpy'},
+      {id: 'install_pip_debian', type: 'pip', distro: 'debian', installCommands: 'pip install Cython', version: 9},
+    ], platform);
+    expect(
+      _.find(imageProvider.imageRegistry.images, {id: imageID}).buildTools
+    ).to.be.eql([
+      {id: 'glibc', type: 'system', distro: 'debian'},
+      {id: 'install_pip', type: 'pip', installCommands: 'pip install wheel'},
+      {id: 'install_pip_debian', type: 'pip', distro: 'debian', installCommands: 'pip install Cython', version: 9},
+    ]);
   });  
 });
