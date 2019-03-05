@@ -129,6 +129,7 @@ blacksm INFO  config: {{blacksmith-output}}/config
 Find more information about Blacksmith features in the [Blacksmith user guide](./docs/Blacksmith.md).
 
 ## Licensing
+
 Blacksmith is licensed under the GPL, Version 2.0
 
 See the [COPYING](./COPYING) file for the full license text.
