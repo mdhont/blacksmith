@@ -1,6 +1,6 @@
 {
   "name": "blacksmith",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Bitnami Blacksmith System",
   "main": "index.js",
   "engines": {
@@ -11,7 +11,7 @@
     "cmd-parser": "^0.0.1",
     "common-utils": "bitnami/node-common-utils#v2.2.0",
     "compilation-utils": "bitnami/node-compilation-utils#v1.0.4",
-    "docker-utils": "bitnami/node-docker-utils#v3.2.0",
+    "docker-utils": "bitnami/node-docker-utils#v3.3.0",
     "lodash": "^4.0.0",
     "nami-logger": "^0.0.1",
     "nami-utils": "^0.2.0",
