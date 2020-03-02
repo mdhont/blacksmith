@@ -4,7 +4,7 @@ const gulp = require('gulp');
 const commonTasks = require('bitnami-gulp-common-tasks')(gulp);
 const runSequence = require('run-sequence');
 
-const nodeVersion = '6.9.4';
+const nodeVersion = '10.19.0';
 
 /* CI tasks */
 
