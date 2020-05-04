@@ -17,6 +17,16 @@ describe('Centos', () => {
           text = `${args}: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, ` +
             `interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=12345, stripped`;
           break;
+        case 'objdump':
+          text = `${args}: file format elf64-x86-64\n\n` +
+              `Dynamic Section:\n` +
+              `NEEDED libc.so.6\n`;
+          break;
+        case 'readelf':
+          text = `ELF Header:\n` +
+              `Class: ELF64\n` +
+              `0x0000000000000001 (NEEDED) Shared library: [libc.so.6]\n`;
+          break;
         case 'ldd':
           text = 'libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f8526cd7000)' +
             '/lib64/ld-linux-x86-64.so.2 (0x000055e8c385d000)';
